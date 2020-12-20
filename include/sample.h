@@ -22,7 +22,7 @@ struct sample{
 
 
 std::ostream& operator<<(std::ostream& ostr, const sample& x){
-  return ostr << x.bd.fen() << '|' << x.win_ << '|' << x.draw_ << '|' << x.loss_ << '|';
+  return ostr << x.state.fen() << '|' << x.win_ << '|' << x.draw_ << '|' << x.loss_ << '|';
 }
 
 
