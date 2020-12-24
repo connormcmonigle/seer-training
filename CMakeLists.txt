@@ -8,5 +8,7 @@ set (CMAKE_CXX_FLAGS "-Ofast -g -DNDEBUG -fconstexpr-ops-limit=1000000000  -marc
 
 include_directories (include ../seer-nnue/include/)
 
-add_executable (test_sample_reader test/test_sample_reader.cc)
-add_executable (test_fen_reader test/test_fen_reader.cc)
+add_executable(test_sample_reader test/test_sample_reader.cc)
+
+add_subdirectory(pybind11)
+pybind11_add_module(seer_train src/seer_train.cc)

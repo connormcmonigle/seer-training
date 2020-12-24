@@ -1,0 +1,4 @@
+base_position_count_target: 1_000_000_000
+pgn_src: '/media/connor/7F35A067038168A9/seer_train/lichess_db_standard_rated_2020-11.pgn'
+
+root_path: '/media/connor/7F35A067038168A9/seer_train/data_root'

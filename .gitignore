@@ -1,2 +1,4 @@
 build/*
 !build/.gitkeep
+*.pyc
+scripts/__pycache__/

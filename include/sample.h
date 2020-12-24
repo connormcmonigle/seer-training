@@ -1,97 +1,126 @@
 #pragma once
 
 #include <iostream>
+#include <memory>
 #include <fstream>
 #include <iterator>
 #include <sstream>
 #include <cstdint>
 #include <tuple>
+#include <optional>
 
 #include <training.h>
 
 namespace train{
 
-constexpr char field_delimiter = '|';
+wdl_type mirror_wdl(const wdl_type& x){
+  const auto [w, d, l] = x;
+  return wdl_type(l, d, w);
+}
+
 
 struct sample{
-    state_type state_{};
+  static constexpr char field_delimiter = '|';
 
-    score_type win_;
-    score_type draw_;
-    score_type loss_;
+  state_type state_{};
 
-    feature_set features(){ return get_features(state_); }
+  score_type win_;
+  score_type draw_;
+  score_type loss_;
 
-    double win() const { return static_cast<double>(win_) / static_cast<double>(wdl_scale); }
-    double draw() const { return static_cast<double>(draw_) / static_cast<double>(wdl_scale); }
-    double loss() const { return static_cast<double>(loss_) / static_cast<double>(wdl_scale); }
+  feature_set features(){ return get_features(state_); }
+
+  double win() const { return static_cast<double>(win_) / static_cast<double>(wdl_scale); }
+  double draw() const { return static_cast<double>(draw_) / static_cast<double>(wdl_scale); }
+  double loss() const { return static_cast<double>(loss_) / static_cast<double>(wdl_scale); }
+
+  static sample from_string(const std::string& sample_str){
+    sample x{};
+    std::stringstream ss(sample_str);
+
+    std::string sample_field{}; 
+  
+    std::getline(ss, sample_field, field_delimiter);
+    x.state_ = state_type::parse_fen(sample_field);
+    std::getline(ss, sample_field, field_delimiter);
+    x.win_ = std::stoi(sample_field); 
+    std::getline(ss, sample_field, field_delimiter);
+    x.draw_ = std::stoi(sample_field); 
+    std::getline(ss, sample_field, field_delimiter);
+    x.loss_ = std::stoi(sample_field); 
+    return x;
+  }
 
   sample(const state_type& state, const wdl_type& wdl) : state_{state}, win_{std::get<0>(wdl)}, draw_{std::get<1>(wdl)}, loss_{std::get<2>(wdl)} {}
   sample(){}
 };
 
 std::ostream& operator<<(std::ostream& ostr, const sample& x){
-  return ostr << x.state_.fen() << field_delimiter << x.win_ << field_delimiter << x.draw_ << field_delimiter << x.loss_ << '\n';
-}
-
-std::istream& operator>>(std::istream& istr, sample& x){
-  std::string sample_str{}; std::getline(istr, sample_str);
-  if(!istr){ return istr; }
-
-  std::stringstream ss(sample_str);
-
-  std::string sample_field{}; 
-  
-  std::getline(ss, sample_field, field_delimiter);
-  x.state_ = state_type::parse_fen(sample_field);
-  std::getline(ss, sample_field, field_delimiter);
-  x.win_ = std::stoi(sample_field); 
-  std::getline(ss, sample_field, field_delimiter);
-  x.draw_ = std::stoi(sample_field); 
-  std::getline(ss, sample_field, field_delimiter);
-  x.loss_ = std::stoi(sample_field); 
-  return istr; 
+  return 
+    ostr << x.state_.fen()
+    << sample::field_delimiter << x.win_
+    << sample::field_delimiter << x.draw_
+    << sample::field_delimiter << x.loss_ 
+    << '\n';
 }
 
 
-struct sample_reader_iterator{
+template<typename T>
+struct file_reader_iterator{
   using difference_type = long;
-  using value_type = sample;
-  using pointer = const sample*;
-  using reference = const sample&;
+  using value_type = T;
+  using pointer = const T*;
+  using reference = const T&;
   using iterator_category = std::output_iterator_tag;
 
-  bool is_end_;
-  std::ifstream file_;
-  sample current_{};
+  std::optional<T> current_{std::nullopt};
+  std::function<std::optional<T>(std::ifstream&)> read_element_;
+  std::shared_ptr<std::ifstream> file_{nullptr};
 
-  sample_reader_iterator& operator++(){
-    is_end_ = !(file_ >> current_);
+  file_reader_iterator<T>& operator++(){
+    current_ = read_element_(*file_);
     return *this;
   }
-  
-  bool operator==(const sample_reader_iterator& other) const {
-    return is_end_ && other.is_end_;
+
+  file_reader_iterator<T> operator++(int){
+    auto retval = *this;
+    ++(*this);
+    return retval;
+  }
+
+  bool operator==(const file_reader_iterator<T>& other) const {
+    return !current_.has_value() && !other.current_.has_value();
   }
   
-  bool operator!=(const sample_reader_iterator& other) const {
+  bool operator!=(const file_reader_iterator<T>& other) const {
     return !(*this == other);
   }
 
-  sample operator*() const { return current_; }
+  T operator*() const { return current_.value(); }
 
-  sample_reader_iterator(const std::string& path) : is_end_{false}, file_(path) {
-    is_end_ = !(file_ >> current_);
+  template<typename F>
+  file_reader_iterator(F&& f, const std::string& path) : read_element_{f}, file_{std::make_shared<std::ifstream>(path)} {
+    ++(*this);
   }
 
-  sample_reader_iterator() : is_end_{true} {}
+  file_reader_iterator(){}
 };
+
+template<typename T, typename F>
+auto to_line_reader(F&& f){
+  return [f](std::ifstream& in){
+    std::string representation{}; std::getline(in, representation);
+    if(in){ return std::optional<T>(f(representation));}
+    return std::optional<T>(std::nullopt);
+  };
+}
 
 struct sample_reader{
   std::string path_;
 
-  sample_reader_iterator begin() const { return sample_reader_iterator(path_); }
-  sample_reader_iterator end() const { return sample_reader_iterator(); }
+  file_reader_iterator<sample> begin() const { return file_reader_iterator<sample>(to_line_reader<sample>(sample::from_string), path_); }
+
+  file_reader_iterator<sample> end() const { return file_reader_iterator<sample>(); }
 
   sample_reader(const std::string& path) : path_{path} {}
 };
