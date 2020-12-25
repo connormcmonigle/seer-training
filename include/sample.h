@@ -34,6 +34,13 @@ struct sample{
   double draw() const { return static_cast<double>(draw_) / static_cast<double>(wdl_scale); }
   double loss() const { return static_cast<double>(loss_) / static_cast<double>(wdl_scale); }
 
+  std::string to_string() const {
+    return state_.fen() + sample::field_delimiter + 
+    std::to_string(win_) + sample::field_delimiter +
+    std::to_string(draw_) + sample::field_delimiter +
+    std::to_string(loss_);
+  }
+
   static sample from_string(const std::string& sample_str){
     sample x{};
     std::stringstream ss(sample_str);
@@ -54,15 +61,6 @@ struct sample{
   sample(const state_type& state, const wdl_type& wdl) : state_{state}, win_{std::get<0>(wdl)}, draw_{std::get<1>(wdl)}, loss_{std::get<2>(wdl)} {}
   sample(){}
 };
-
-std::ostream& operator<<(std::ostream& ostr, const sample& x){
-  return 
-    ostr << x.state_.fen()
-    << sample::field_delimiter << x.win_
-    << sample::field_delimiter << x.draw_
-    << sample::field_delimiter << x.loss_ 
-    << '\n';
-}
 
 
 template<typename T>
@@ -122,6 +120,12 @@ struct sample_reader{
 
   file_reader_iterator<sample> end() const { return file_reader_iterator<sample>(); }
 
+  size_t size() const {
+    size_t size_{};
+    for(const auto& _ : *this){ (void)_; ++size_; }
+    return size_;
+  }  
+
   sample_reader(const std::string& path) : path_{path} {}
 };
 
@@ -130,7 +134,7 @@ struct sample_writer{
   std::ofstream file_;
 
   sample_writer& append_sample(const sample& datum){
-    file_ << datum;
+    file_ << datum.to_string() << '\n';
     return *this;
   }
 

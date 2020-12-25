@@ -22,6 +22,10 @@ constexpr std::string_view train_dir = "train";
 constexpr std::string_view raw_dir = "raw";
 
 constexpr size_t half_feature_numel(){ return half_feature_numel_; }
+constexpr wdl_type known_win_value(){ return win; }
+constexpr wdl_type known_draw_value(){ return draw; }
+constexpr wdl_type known_loss_value(){ return loss; }
+
 
 std::string raw_n_man_path(const std::string& root, const size_t& n){
   return root + std::string(path_delimiter) + std::string(raw_dir) + std::string(path_delimiter) + std::to_string(n) + std::string(extension);
@@ -38,6 +42,12 @@ struct raw_fen_reader{
   file_reader_iterator<state_type> begin() const { return file_reader_iterator<state_type>(to_line_reader<state_type>(state_type::parse_fen), path_); }
   file_reader_iterator<state_type> end() const { return file_reader_iterator<state_type>(); }
 
+  size_t size() const {
+    size_t size_{};
+    for(const auto& _ : *this){ (void)_; ++size_; }
+    return size_;
+  }
+
   raw_fen_reader(const std::string& path): path_{path} {}
 };
 
@@ -51,6 +61,10 @@ struct session{
   sample_writer get_n_man_train_writer(const size_t& n){
     const std::string train_path = train_n_man_path(root_, n);
     return sample_writer(train_path);
+  }
+
+  raw_fen_reader get_n_man_raw_reader(const size_t& n) const {
+    return raw_fen_reader(raw_n_man_path(root_, n));
   }
 
   sample_reader get_n_man_train_reader(const size_t& n){
