@@ -28,6 +28,7 @@ struct sample{
   score_type draw_;
   score_type loss_;
 
+  bool pov() const { return state_.turn(); }
   feature_set features(){ return get_features(state_); }
 
   double win() const { return static_cast<double>(win_) / static_cast<double>(wdl_scale); }
@@ -114,15 +115,18 @@ auto to_line_reader(F&& f){
 }
 
 struct sample_reader{
+  std::optional<size_t> memoi_size_{std::nullopt};
   std::string path_;
 
   file_reader_iterator<sample> begin() const { return file_reader_iterator<sample>(to_line_reader<sample>(sample::from_string), path_); }
 
   file_reader_iterator<sample> end() const { return file_reader_iterator<sample>(); }
 
-  size_t size() const {
+  size_t size(){
+    if(memoi_size_.has_value()){ return memoi_size_.value(); }
     size_t size_{};
     for(const auto& _ : *this){ (void)_; ++size_; }
+    memoi_size_ = size_;
     return size_;
   }  
 

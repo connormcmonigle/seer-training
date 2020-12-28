@@ -10,5 +10,7 @@ include_directories (include ../seer-nnue/include/)
 
 add_executable(test_sample_reader test/test_sample_reader.cc)
 
+add_executable(test_continuation test/test_continuation.cc)
+
 add_subdirectory(pybind11)
 pybind11_add_module(seer_train src/seer_train.cc)

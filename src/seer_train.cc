@@ -18,7 +18,7 @@ PYBIND11_MODULE(seer_train, m){
 
   py::class_<train::feature_set>(m, "FeatureSet")
     .def_readonly("white", &train::feature_set::white)
-    .def_readonly("white", &train::feature_set::black);
+    .def_readonly("black", &train::feature_set::black);
 
   py::class_<train::state_type>(m, "StateType")
     .def_static("parse_fen", train::state_type::parse_fen)
@@ -28,6 +28,7 @@ PYBIND11_MODULE(seer_train, m){
   py::class_<train::sample>(m, "Sample")
     .def(py::init<const train::state_type&, const train::wdl_type&>())
     .def("features", &train::sample::features)
+    .def("pov", &train::sample::pov)
     .def("win", &train::sample::win)
     .def("draw", &train::sample::draw)
     .def("loss", &train::sample::loss)

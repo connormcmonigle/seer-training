@@ -36,15 +36,17 @@ std::string train_n_man_path(const std::string& root, const size_t& n){
 }
 
 struct raw_fen_reader{
-
+  std::optional<size_t> memoi_size_{std::nullopt};
   std::string path_;
 
   file_reader_iterator<state_type> begin() const { return file_reader_iterator<state_type>(to_line_reader<state_type>(state_type::parse_fen), path_); }
   file_reader_iterator<state_type> end() const { return file_reader_iterator<state_type>(); }
 
-  size_t size() const {
+  size_t size(){
+    if(memoi_size_.has_value()){ return memoi_size_.value(); }
     size_t size_{};
     for(const auto& _ : *this){ (void)_; ++size_; }
+    memoi_size_ = size_;
     return size_;
   }
 
