@@ -12,7 +12,9 @@ int main(){
   const auto link = interface.get_continuation(base);
 
   if(link.has_value()){
-    std::cout << link -> fen() << std::endl;
+    std::cout << (link -> state()).fen();
+    const auto [w, d, l] = interface.get_wdl(*link);
+    std::cout << " :: (" << w << ", " << d << ", " << l << ")\n";
   }else{
     std::cout << "None" << std::endl;
   }

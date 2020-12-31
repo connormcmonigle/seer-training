@@ -8,15 +8,16 @@ pgn_src: '/media/connor/7F35A067038168A9/seer_train/lichess_db_standard_rated_20
 tb_cardinality: 6
 tb_path: /media/connor/7F35A067038168A9/6_man_tb/wdl/
 
+concurrency: 12
 root_path: '/media/connor/7F35A067038168A9/seer_train/data_root'
 
 shuffle_buffer_size: 100_000
 
-batch_size: 384
+batch_size: 1024
 
 visual_directory: 'visual'
 
-save_rate: 10000
+save_rate: 1000
 report_rate: 50
 test_rate: 50
 max_queue_size: 128

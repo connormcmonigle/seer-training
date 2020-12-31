@@ -122,13 +122,18 @@ struct sample_reader{
 
   file_reader_iterator<sample> end() const { return file_reader_iterator<sample>(); }
 
-  size_t size(){
-    if(memoi_size_.has_value()){ return memoi_size_.value(); }
+  size_t const_size() const {
     size_t size_{};
     for(const auto& _ : *this){ (void)_; ++size_; }
-    memoi_size_ = size_;
     return size_;
   }  
+
+  size_t size(){
+    if(memoi_size_.has_value()){ return memoi_size_.value(); }
+    size_t size_ = const_size();
+    memoi_size_ = size_;
+    return size_;
+  }
 
   sample_reader(const std::string& path) : path_{path} {}
 };

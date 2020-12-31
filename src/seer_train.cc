@@ -52,6 +52,8 @@ PYBIND11_MODULE(seer_train, m){
   py::class_<train::session>(m, "Session")
     .def(py::init<const std::string&>())
     .def("load_weights", &train::session::load_weights)
+    .def("concurrency", &train::session::concurrency)
+    .def("set_concurrency", &train::session::set_concurrency)
     .def("get_n_man_train_writer", &train::session::get_n_man_train_writer)
     .def("get_n_man_raw_reader", &train::session::get_n_man_raw_reader)
     .def("get_n_man_train_reader", &train::session::get_n_man_train_reader);

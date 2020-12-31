@@ -40,7 +40,7 @@ def main():
 
   valid_man_counts = util.valid_man_counts()
 
-  sess = seer_train.Session(cfg.root_path)
+  sess = seer_train.Session(cfg.root_path).set_concurrency(cfg.concurrency)
 
   #train_data = dataset.SeerData(sess.get_n_man_train_reader(valid_man_counts[0]), cfg)
   
