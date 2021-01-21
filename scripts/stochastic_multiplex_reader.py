@@ -17,7 +17,7 @@ class StochasticMultiplexReader:
     iters = [iter(reader) for reader in self.readers]
     items = [next(it, None) for it in iters]
 
-    while functools.reduce(lambda a, b: a if b is None else a, items) is not None:
+    while functools.reduce(lambda a, b: a if b is None else b, items) is not None:
       idx = np.random.choice(len(items),  p=self.probabilities)
       if items[idx] is not None:
         yield items[idx]
