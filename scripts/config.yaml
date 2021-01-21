@@ -11,6 +11,7 @@ tb_path: /media/connor/7F35A067038168A9/6_man_tb/wdl/
 concurrency: 12
 root_path: '/media/connor/7F35A067038168A9/seer_train/data_root'
 
+epochs: 100000
 shuffle_buffer_size: 100_000
 
 batch_size: 1024

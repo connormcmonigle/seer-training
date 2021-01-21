@@ -1,7 +1,5 @@
 import os
 import math
-import bitstring
-import struct
 import random
 import torch
 import chess
@@ -41,12 +39,16 @@ class SeerData(torch.utils.data.IterableDataset):
     self.shuffle_buffer[shuffle_buffer_idx] = sample
     return result
 
-  def __iter__(self):
+  def sample_iter(self):
     for sample in self.reader:
       val = self.get_shuffled(sample)
       if val != None:
-        yield sample_to_tensor(val)
+        yield val
     # clear remaining entries from buffer
     for val in self.shuffle_buffer:
       if val != None:
-        yield sample_to_tensor(val)
+        yield val
+
+  def __iter__(self):
+    for sample in self.sample_iter():
+      yield sample_to_tensor(sample)

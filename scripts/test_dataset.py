@@ -1,11 +1,17 @@
 import config
 import seer_train
 import dataset
+import util
+
+from stochastic_multiplex_reader import StochasticMultiplexReader
+
 
 cfg = config.Config('config.yaml')
 sess = seer_train.Session(cfg.root_path)
 
-data = dataset.SeerData(sess.get_n_man_train_reader(2), cfg)
+
+reader = StochasticMultiplexReader([seer_train.train_n_man_path(cfg.root_path, i) for i in util.valid_man_counts()[:6]])
+data = dataset.SeerData(reader, cfg)
 
 for i in data:
   print(i)
