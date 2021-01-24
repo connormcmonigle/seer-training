@@ -1,13 +1,9 @@
 #pragma once
 
-#include <iostream>
 #include <memory>
 #include <fstream>
-#include <iterator>
+#include <string>
 #include <sstream>
-#include <cstdint>
-#include <tuple>
-#include <optional>
 
 #include <training.h>
 
@@ -61,93 +57,6 @@ struct sample{
 
   sample(const state_type& state, const wdl_type& wdl) : state_{state}, win_{std::get<0>(wdl)}, draw_{std::get<1>(wdl)}, loss_{std::get<2>(wdl)} {}
   sample(){}
-};
-
-
-template<typename T>
-struct file_reader_iterator{
-  using difference_type = long;
-  using value_type = T;
-  using pointer = const T*;
-  using reference = const T&;
-  using iterator_category = std::output_iterator_tag;
-
-  std::optional<T> current_{std::nullopt};
-  std::function<std::optional<T>(std::ifstream&)> read_element_;
-  std::shared_ptr<std::ifstream> file_{nullptr};
-
-  file_reader_iterator<T>& operator++(){
-    current_ = read_element_(*file_);
-    return *this;
-  }
-
-  file_reader_iterator<T> operator++(int){
-    auto retval = *this;
-    ++(*this);
-    return retval;
-  }
-
-  bool operator==(const file_reader_iterator<T>& other) const {
-    return !current_.has_value() && !other.current_.has_value();
-  }
-  
-  bool operator!=(const file_reader_iterator<T>& other) const {
-    return !(*this == other);
-  }
-
-  T operator*() const { return current_.value(); }
-
-  template<typename F>
-  file_reader_iterator(F&& f, const std::string& path) : read_element_{f}, file_{std::make_shared<std::ifstream>(path)} {
-    ++(*this);
-  }
-
-  file_reader_iterator(){}
-};
-
-template<typename T, typename F>
-auto to_line_reader(F&& f){
-  return [f](std::ifstream& in){
-    std::string representation{}; std::getline(in, representation);
-    if(in){ return std::optional<T>(f(representation));}
-    return std::optional<T>(std::nullopt);
-  };
-}
-
-struct sample_reader{
-  std::optional<size_t> memoi_size_{std::nullopt};
-  std::string path_;
-
-  file_reader_iterator<sample> begin() const { return file_reader_iterator<sample>(to_line_reader<sample>(sample::from_string), path_); }
-
-  file_reader_iterator<sample> end() const { return file_reader_iterator<sample>(); }
-
-  size_t const_size() const {
-    size_t size_{};
-    for(const auto& _ : *this){ (void)_; ++size_; }
-    return size_;
-  }  
-
-  size_t size(){
-    if(memoi_size_.has_value()){ return memoi_size_.value(); }
-    size_t size_ = const_size();
-    memoi_size_ = size_;
-    return size_;
-  }
-
-  sample_reader(const std::string& path) : path_{path} {}
-};
-
-struct sample_writer{
-  std::string path_;
-  std::ofstream file_;
-
-  sample_writer& append_sample(const sample& datum){
-    file_ << datum.to_string() << '\n';
-    return *this;
-  }
-
-  sample_writer(const std::string& path) : path_{path}, file_{path} {}
 };
 
 }

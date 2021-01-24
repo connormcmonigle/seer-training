@@ -13,10 +13,20 @@ import dataset
 import model
 
 
+def all_sample_readers():
+  paths = [seer_train.train_n_man_path(cfg.root_path, i) for i in valid_man_counts]
+  for p in paths:
+    assert path.exists(p)
+  return [seer_train.SampleReader(p) for p in paths]
+
+
+def generation_callback(completed, total):
+  percent = 100.0 * float(completed) / float(total)
+  print(f'{completed}/{total} - {percent:0.2f}%')
+
+
 def train_step(M, sample, opt, queue, max_queue_size, report=False):
   pov, white, black, prob = sample
-
-
   pred = M(pov, white, black)
   loss = model.loss_fn(prob, pred)
   if report:
@@ -76,14 +86,16 @@ def main():
     
       if men < args.resume:
         assert(path.exists(seer_train.train_n_man_path(cfg.root_path, men)))
-        total_steps += sess.get_n_man_train_reader(men).size() // cfg.batch_size
-        print('skipping {} man positions'.format(men))
+        total_steps += sess.get_n_man_train_reader(men, generation_callback).size() // cfg.batch_size
+        print(f'skipping {men} man positions')
         continue
       else:
-        print('training on {} man positions'.format(men))
+        print(f'training on {men} man positions')
     
-      train_data = dataset.SeerData(sess.get_n_man_train_reader(men), cfg)
+      train_data = dataset.SeerData(sess.get_n_man_train_reader(men, generation_callback), cfg)
   
+      print('loaded {men} man positions')
+
       train_data_loader = torch.utils.data.DataLoader(train_data, batch_size=cfg.batch_size)
 
       for i, sample in enumerate(train_data_loader):
@@ -107,7 +119,7 @@ def main():
   else:
     print('training on all positions')
 
-    reader = StochasticMultiplexReader([seer_train.train_n_man_path(cfg.root_path, i) for i in valid_man_counts])
+    reader = StochasticMultiplexReader(all_sample_readers())
     train_data = dataset.SeerData(reader, cfg)
     train_data_loader = torch.utils.data.DataLoader(train_data, batch_size=cfg.batch_size)
 

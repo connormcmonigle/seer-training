@@ -1,5 +1,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/functional.h>
 
 #include <sample.h>
 #include <session.h>
@@ -56,7 +57,7 @@ PYBIND11_MODULE(seer_train, m){
     .def("set_concurrency", &train::session::set_concurrency)
     .def("get_n_man_train_writer", &train::session::get_n_man_train_writer)
     .def("get_n_man_raw_reader", &train::session::get_n_man_raw_reader)
-    .def("get_n_man_train_reader", &train::session::get_n_man_train_reader);
+    .def("get_n_man_train_reader", &train::session::get_n_man_train_reader, py::call_guard<py::gil_scoped_release>());
 
 
 }

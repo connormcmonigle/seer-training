@@ -20,6 +20,7 @@ def fetch_wdl(tb, position):
     if res < 0:
       return seer_train.known_loss_value()
 
+
 def generate_base_dataset():
   cfg = config.Config('config.yaml')
   
@@ -36,6 +37,7 @@ def generate_base_dataset():
         destination.append_sample(seer_train.Sample(state, wdl))
       else:
         print('could not fetch: {}'.format(state.fen()))
+
 
 if __name__ == '__main__':
   generate_base_dataset()
