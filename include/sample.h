@@ -38,6 +38,8 @@ struct sample{
     std::to_string(loss_);
   }
 
+  sample mirrored() const { return sample(state_.mirrored(), wdl_type{win_, draw_, loss_}); }
+
   static sample from_string(const std::string& sample_str){
     sample x{};
     std::stringstream ss(sample_str);

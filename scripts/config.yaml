@@ -14,6 +14,7 @@ root_path: '/media/connor/7F35A067038168A9/seer_train/data_root'
 epochs: 100000
 shuffle_buffer_size: 100_000
 
+mirror_probability: 0.33
 batch_size: 1024
 
 visual_directory: 'visual'

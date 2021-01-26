@@ -31,6 +31,7 @@ PYBIND11_MODULE(seer_train, m){
   py::class_<train::sample>(m, "Sample")
     .def(py::init<const train::state_type&, const train::wdl_type&>())
     .def("features", &train::sample::features)
+    .def("mirrored", &train::sample::mirrored)
     .def("pov", &train::sample::pov)
     .def("win", &train::sample::win)
     .def("draw", &train::sample::draw)

@@ -108,7 +108,8 @@ class SeerData(torch.utils.data.IterableDataset):
 
   def __iter__(self):
     for sample in self.sample_iter():
-      yield sample_to_tensor(sample)
+      mirror = np.random.rand() <= self.config.mirror_probability
+      yield sample_to_tensor(sample.mirrored() if mirror else sample)
 
 
 def to_sparse(x):
