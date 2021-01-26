@@ -117,7 +117,6 @@ def to_sparse(x):
   batch_idx = torch.arange(x.size(0)).unsqueeze(-1).expand(x.size(0), N)
   active_mask = x.ge(0)
   indices = torch.stack([batch_idx[active_mask], x[active_mask]], dim=0)
-  torch.ones(active_mask.sum())
   return torch.sparse.FloatTensor(
     indices,
     torch.ones(active_mask.sum()),
