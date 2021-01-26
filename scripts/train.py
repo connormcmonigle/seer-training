@@ -8,21 +8,13 @@ import argparse
 import config
 import seer_train
 import util
-from stochastic_multiplex_reader import StochasticMultiplexReader
 import dataset
 import model
 
 
-def all_sample_readers():
-  paths = [seer_train.train_n_man_path(cfg.root_path, i) for i in valid_man_counts]
-  for p in paths:
-    assert path.exists(p)
-  return [seer_train.SampleReader(p) for p in paths]
-
-
-def generation_callback(completed, total):
-  percent = 100.0 * float(completed) / float(total)
-  print(f'{completed}/{total} - {percent:0.2f}%')
+def all_sample_readers(sess, n_end=-1):
+  paths = [sess.get_n_man_train_path(i) for i in util.valid_man_counts()][:n_end]
+  return [dataset.DataReader(p) for p in paths]
 
 
 def train_step(M, sample, opt, queue, max_queue_size, report=False):
@@ -48,7 +40,7 @@ def main():
 
   cfg = config.Config('config.yaml')
 
-  sample_to_device = lambda x: tuple(map(lambda t: t.to(cfg.device, non_blocking=True), x))
+  sample_to_device = lambda x: tuple(map(lambda t: t.to(cfg.device, non_blocking=True), dataset.post_process(x)))
 
   M = model.NNUE().to(cfg.device)
 
@@ -61,16 +53,8 @@ def main():
     M.load_state_dict(torch.load(cfg.model_save_path))
     sess.load_weights(cfg.bin_model_save_path)
 
-  #train_data = dataset.SeerData(sess.get_n_man_train_reader(valid_man_counts[0]), cfg)
-  
-  #train_data_loader = torch.utils.data.DataLoader(train_data,\
-  #  batch_size=cfg.batch_size,\
-  #  pin_memory=False)
-
 
   writer = SummaryWriter(cfg.visual_directory)
-
-  #writer.add_graph(M, sample_to_device(next(iter(train_data_loader)))[:3])
 
   opt = optim.Adadelta(M.parameters(), lr=cfg.learning_rate)
   scheduler = optim.lr_scheduler.StepLR(opt, 1, gamma=0.95)
@@ -85,18 +69,25 @@ def main():
     for men in valid_man_counts:
     
       if men < args.resume:
-        assert(path.exists(seer_train.train_n_man_path(cfg.root_path, men)))
-        total_steps += sess.get_n_man_train_reader(men, generation_callback).size() // cfg.batch_size
+        n_path = sess.get_n_man_train_path(men)
+        assert path.exists(n_path)
+
+        total_steps += seer_train.SampleReader(n_path).size() // cfg.batch_size
         print(f'skipping {men} man positions')
         continue
       else:
         print(f'training on {men} man positions')
-    
-      train_data = dataset.SeerData(sess.get_n_man_train_reader(men, generation_callback), cfg)
-  
-      print('loaded {men} man positions')
 
-      train_data_loader = torch.utils.data.DataLoader(train_data, batch_size=cfg.batch_size)
+      sess.maybe_generate_links_for(men)
+      train_data = dataset.SeerData(dataset.DataReader(sess.get_n_man_train_path(men)), cfg)
+  
+      print(f'loaded {men} man positions')
+
+      train_data_loader = torch.utils.data.DataLoader(train_data,
+        batch_size=cfg.batch_size, 
+        num_workers=cfg.concurrency,
+        pin_memory=True,
+        worker_init_fn=dataset.worker_init_fn)
 
       for i, sample in enumerate(train_data_loader):
         # update visual data
@@ -119,9 +110,14 @@ def main():
   else:
     print('training on all positions')
 
-    reader = StochasticMultiplexReader(all_sample_readers())
+    reader = dataset.StochasticMultiplexReader(all_sample_readers(sess))
     train_data = dataset.SeerData(reader, cfg)
-    train_data_loader = torch.utils.data.DataLoader(train_data, batch_size=cfg.batch_size)
+    
+    train_data_loader = torch.utils.data.DataLoader(train_data,
+      batch_size=cfg.batch_size, 
+      num_workers=cfg.concurrency,
+      pin_memory=True,
+      worker_init_fn=dataset.worker_init_fn)
 
     for epoch in range(cfg.epochs):
       for i, sample in enumerate(train_data_loader):

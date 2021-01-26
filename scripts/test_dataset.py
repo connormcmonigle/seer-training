@@ -1,17 +1,19 @@
+import torch
+
 import config
 import seer_train
 import dataset
 import util
-
-from stochastic_multiplex_reader import StochasticMultiplexReader
-
+import train
 
 cfg = config.Config('config.yaml')
 sess = seer_train.Session(cfg.root_path)
 
 
-reader = StochasticMultiplexReader([seer_train.train_n_man_path(cfg.root_path, i) for i in util.valid_man_counts()[:6]])
+reader = dataset.StochasticMultiplexReader([dataset.DataReader(sess.get_n_man_train_path(7))])
 data = dataset.SeerData(reader, cfg)
+train_data_loader = torch.utils.data.DataLoader(data, batch_size=cfg.batch_size, num_workers=6, worker_init_fn=dataset.worker_init_fn)
 
-for i in data:
-  print(i)
+
+for i in train_data_loader:
+  print(dataset.post_process(i))

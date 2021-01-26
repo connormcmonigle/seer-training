@@ -33,6 +33,7 @@ constexpr std::string_view train_dir = "train";
 constexpr std::string_view raw_dir = "raw";
 
 constexpr size_t half_feature_numel(){ return half_feature_numel_; }
+constexpr size_t max_active_half_features(){ return max_active_half_features_; }
 constexpr wdl_type known_win_value(){ return win; }
 constexpr wdl_type known_draw_value(){ return draw; }
 constexpr wdl_type known_loss_value(){ return loss; }
@@ -62,65 +63,48 @@ struct session{
   void load_weights(const std::string& path){ interface_.load_weights(path); }
 
 
-  sample_writer get_n_man_train_writer(const size_t& n){
-    const std::string train_path = train_n_man_path(root_, n);
-    return sample_writer(train_path);
+  std::string get_n_man_train_path(const size_t& n) const {
+    return train_n_man_path(root_, n);
   }
 
-  raw_fen_reader get_n_man_raw_reader(const size_t& n) const {
-    const std::string raw_path = raw_n_man_path(root_, n);
-    return raw_fen_reader(raw_path);
+  std::string get_n_man_raw_path(const size_t& n) const {
+    return raw_n_man_path(root_, n);
   }
 
-  void generate_links_for_(const size_t& n, std::function<void(size_t, size_t)> gen_callback){
+  void generate_links_for_(const size_t& n){
     constexpr size_t work_block_size = 512;
 
     auto controller = data_controller<work_block_size>(
-      get_n_man_raw_reader(n),
-      train_n_man_path(root_, n)
+      get_n_man_raw_path(n),
+      get_n_man_train_path(n)
     );
 
-    auto generate_link_part = [&, this](const size_t thread_idx){      
+    auto generate_link_part = [&, this]{      
       for(auto block = controller.read_block(); block.has_value(); block = controller.read_block()){
-        
-        if(thread_idx == 0){
-          const auto [completed, total] = controller.progress();
-          gen_callback(completed, total);
-        }
-
         std::vector<sample> buffer{};
-        
         for(const auto& elem : block.value()){
-          
           const std::optional<continuation_type> continuation = interface_.get_continuation(elem);
-          
           if(continuation.has_value()){
             const wdl_type wdl = interface_.get_wdl(continuation.value());
             const bool same_pov = ((continuation -> state()).turn() == elem.turn());
             buffer.push_back(sample{elem, same_pov ? wdl : mirror_wdl(wdl)});
           }
-
         }
-
         controller.write_block(buffer);
-
       }
     };
 
     std::vector<std::thread> threads{};
-    for(size_t i(0); i < concurrency(); ++i){
-      threads.emplace_back(generate_link_part, i);
-    }
-
+    for(size_t i(0); i < concurrency(); ++i){ threads.emplace_back(generate_link_part); }
     for(auto& th : threads){ th.join(); }
   }
 
-  sample_reader get_n_man_train_reader(const size_t& n, std::function<void(size_t, size_t)> gen_callback){
+  void maybe_generate_links_for(const size_t& n){
     const std::string train_path = train_n_man_path(root_, n);
-    if(std::filesystem::exists(std::filesystem::path{}.assign(train_path))){ return sample_reader(train_path); }
-    assert((n > min_base_cardinality));
-    generate_links_for_(n, gen_callback);
-    return sample_reader(train_path);
+    if(!std::filesystem::exists(std::filesystem::path{}.assign(train_path))){
+      assert((n > min_base_cardinality));
+      generate_links_for_(n);
+    }
   }
 
   session(const std::string& root) : root_{root} {}

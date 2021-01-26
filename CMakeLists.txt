@@ -17,6 +17,9 @@ target_link_libraries (test_continuation Threads::Threads)
 add_executable(test_generate_links test/test_generate_links.cc)
 target_link_libraries (test_generate_links Threads::Threads)
 
+add_executable(test_line_count_size test/test_line_count_size.cc)
+target_link_libraries (test_generate_links Threads::Threads)
+
 add_subdirectory(pybind11)
 pybind11_add_module(seer_train src/seer_train.cc)
 

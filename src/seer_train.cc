@@ -9,6 +9,8 @@ namespace py = pybind11;
 
 PYBIND11_MODULE(seer_train, m){
   m.def("half_feature_numel", train::half_feature_numel);
+  m.def("max_active_half_features", train::max_active_half_features);
+
 
   m.def("known_win_value", train::known_win_value);
   m.def("known_draw_value", train::known_draw_value);
@@ -41,13 +43,13 @@ PYBIND11_MODULE(seer_train, m){
 
   py::class_<train::raw_fen_reader>(m, "RawFenReader")
     .def(py::init<const std::string&>())
-    .def("size", &train::raw_fen_reader::size)
+    .def("size", py::overload_cast<>(&train::raw_fen_reader::size))
     .def("__iter__", [](const train::raw_fen_reader& r) { return py::make_iterator(r.begin(), r.end()); }, py::keep_alive<0, 1>());
 
 
   py::class_<train::sample_reader>(m, "SampleReader")
     .def(py::init<const std::string&>())
-    .def("size", &train::sample_reader::size)
+    .def("size", py::overload_cast<>(&train::sample_reader::size))
     .def("__iter__", [](const train::sample_reader& r) { return py::make_iterator(r.begin(), r.end()); }, py::keep_alive<0, 1>());
 
   py::class_<train::session>(m, "Session")
@@ -55,9 +57,9 @@ PYBIND11_MODULE(seer_train, m){
     .def("load_weights", &train::session::load_weights)
     .def("concurrency", &train::session::concurrency)
     .def("set_concurrency", &train::session::set_concurrency)
-    .def("get_n_man_train_writer", &train::session::get_n_man_train_writer)
-    .def("get_n_man_raw_reader", &train::session::get_n_man_raw_reader)
-    .def("get_n_man_train_reader", &train::session::get_n_man_train_reader, py::call_guard<py::gil_scoped_release>());
+    .def("get_n_man_train_path", &train::session::get_n_man_train_path)
+    .def("get_n_man_raw_path", &train::session::get_n_man_raw_path)
+    .def("maybe_generate_links_for", &train::session::maybe_generate_links_for, py::call_guard<py::gil_scoped_release>());
 
 
 }

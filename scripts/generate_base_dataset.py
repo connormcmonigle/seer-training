@@ -30,8 +30,8 @@ def generate_base_dataset():
   session = seer_train.Session(cfg.root_path)
 
   for i in util.base_man_counts(cfg.tb_cardinality):
-    destination = session.get_n_man_train_writer(i)
-    for state in session.get_n_man_raw_reader(i):
+    destination = seer_train.SampleWriter(session.get_n_man_train_path(i))
+    for state in seer_train.RawFenReader(session.get_n_man_raw_path(i)):
       wdl = fetch_wdl(tb, chess.Board(state.fen()))
       if wdl is not None:
         destination.append_sample(seer_train.Sample(state, wdl))

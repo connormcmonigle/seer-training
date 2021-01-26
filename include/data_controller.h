@@ -46,7 +46,7 @@ struct data_controller{
     return *this;
   }
 
-  data_controller(const raw_fen_reader& reader, const std::string& write_path) : reader_{reader}, writer_{write_path} {
+  data_controller(const std::string& read_path, const std::string& write_path) : reader_{read_path}, writer_{write_path} {
     total_ = reader_.size();
     iter_ = reader_.begin();
   }
