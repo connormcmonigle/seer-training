@@ -59,7 +59,7 @@ class StochasticMultiplexReader:
 
   def __iter__(self):
     iters = [iter(reader) for reader in self.readers]
-    items = [next(it) for it in iters]
+    items = [next(it, None) for it in iters]
 
     while functools.reduce(lambda a, b: a if b is None else b, items) is not None:
       idx = np.random.choice(len(items), p=self.probabilities)
