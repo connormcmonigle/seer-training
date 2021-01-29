@@ -66,7 +66,7 @@ class StochasticMultiplexReader:
       if items[idx] is not None:
         yield items[idx]
 
-      items[idx] = next(iters[idx])
+      items[idx] = next(iters[idx], None)
 
 
 def active_to_tensor(active):

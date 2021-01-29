@@ -14,7 +14,7 @@ import model
 
 def all_sample_readers(sess, n_end=None):
   paths = [sess.get_n_man_train_path(i) for i in util.valid_man_counts()][:n_end]
-  return [dataset.DataReader(p) for p in paths]
+  return [dataset.DataReader(p) if path.exists(p) for p in paths]
 
 
 def train_step(M, sample, opt, queue, max_queue_size, report=False):
