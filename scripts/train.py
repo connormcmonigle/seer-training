@@ -12,7 +12,7 @@ import dataset
 import model
 
 
-def all_sample_readers(sess, n_end=-1):
+def all_sample_readers(sess, n_end=None):
   paths = [sess.get_n_man_train_path(i) for i in util.valid_man_counts()][:n_end]
   return [dataset.DataReader(p) for p in paths]
 
@@ -111,6 +111,7 @@ def main():
     print('training on all positions')
 
     reader = dataset.StochasticMultiplexReader(all_sample_readers(sess))
+    print(reader.name())
     train_data = dataset.SeerData(reader, cfg)
     
     train_data_loader = torch.utils.data.DataLoader(train_data,

@@ -26,6 +26,9 @@ class DataReader:
   def size(self):
     return self.size_
 
+  def name(self):
+    return f'DataReader({self.path})'
+
   def __iter__(self):
     reader = seer_train.SampleReader(self.path)
     for i, sample in enumerate(reader):
@@ -35,17 +38,21 @@ class DataReader:
 
 class StochasticMultiplexReader:
   def __init__(self, readers):
-    self.readers = readers  
-    
+    self.readers = readers
     totals = np.array([reader.size() for reader in self.readers])
     self.size_ = totals.sum()
     self.probabilities = totals.astype(np.float) / float(self.size_)
-    print(self.probabilities)
+
+    reader_names = ', \n  '.join([f'{r.name()} : {p}' for r, p in zip(readers, self.probabilities)])
+    self.name_ = f'StochasticMultiplexReader(\n  {reader_names})'
 
   def configure_subset(self, process_id, num_processes):
     assert process_id < num_processes
     for reader in self.readers:
       reader.configure_subset(process_id, num_processes)
+
+  def name(self):
+    return self.name_
 
   def size(self):
     return self.size_
