@@ -6,16 +6,8 @@ import util
 import seer_train
 
 def position_count_n_man(root, n):
-  with open(seer_train.raw_n_man_path(root, n), 'r') as f:
-    r = sum(1 for line in f)
-
-  train_path = seer_train.train_n_man_path(root, n)
-
-  if not os.path.exists(train_path):
-    return r, None
-
-  with open(train_path, 'r') as f:
-    t = sum(1 for line in f)
+  r = seer_train.RawFenReader(seer_train.raw_n_man_path(root, n)).size()
+  t = seer_train.SampleReader(seer_train.train_n_man_path(root, n)).size()
   
   return r, t
 

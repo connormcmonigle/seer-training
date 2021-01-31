@@ -17,9 +17,9 @@ def all_sample_readers(sess, n_end=None):
   return [dataset.DataReader(p) for p in paths if path.exists(p)]
 
 
-def train_step(M, sample, opt, queue, max_queue_size, report=False):
+def train_step(nnue, sample, opt, queue, max_queue_size, report=False):
   pov, white, black, prob = sample
-  pred = M(pov, white, black)
+  pred = nnue(pov, white, black)
   loss = model.loss_fn(prob, pred)
   if report:
     print(loss.item())
@@ -28,7 +28,7 @@ def train_step(M, sample, opt, queue, max_queue_size, report=False):
     queue.pop(0)
   queue.append(loss.item())
   opt.step()
-  M.zero_grad()
+  nnue.zero_grad()
 
 
 def main():
@@ -42,7 +42,7 @@ def main():
 
   sample_to_device = lambda x: tuple(map(lambda t: t.to(cfg.device, non_blocking=True), dataset.post_process(x)))
 
-  M = model.NNUE().to(cfg.device)
+  nnue = model.NNUE().to(cfg.device)
 
   valid_man_counts = util.valid_man_counts()
 
@@ -50,13 +50,13 @@ def main():
 
   if (path.exists(cfg.model_save_path)):
     print('Loading model ... ')
-    M.load_state_dict(torch.load(cfg.model_save_path))
+    nnue.load_state_dict(torch.load(cfg.model_save_path))
     sess.load_weights(cfg.bin_model_save_path)
 
 
   writer = SummaryWriter(cfg.visual_directory)
 
-  opt = optim.Adadelta(M.parameters(), lr=cfg.learning_rate)
+  opt = optim.Adadelta(nnue.parameters(), lr=cfg.learning_rate)
   scheduler = optim.lr_scheduler.StepLR(opt, 1, gamma=0.95)
 
   queue = []
@@ -98,10 +98,10 @@ def main():
       
         if (i % cfg.save_rate) == 0 and i != 0:
           print('Saving model ...')
-          M.to_binary_file(cfg.bin_model_save_path)
-          torch.save(M.state_dict(), cfg.model_save_path)
+          nnue.flattened_parameters().tofile(cfg.bin_model_save_path)
+          torch.save(nnue.state_dict(), cfg.model_save_path)
 
-        train_step(M, sample_to_device(sample), opt, queue, max_queue_size=cfg.max_queue_size, report=(0 == i % cfg.report_rate))
+        train_step(nnue, sample_to_device(sample), opt, queue, max_queue_size=cfg.max_queue_size, report=(0 == i % cfg.report_rate))
         total_steps += 1
 
       scheduler.step()
@@ -130,10 +130,10 @@ def main():
       
         if (i % cfg.save_rate) == 0 and i != 0:
           print('Saving model ...')
-          M.to_binary_file(cfg.bin_model_save_path)
-          torch.save(M.state_dict(), cfg.model_save_path)
+          nnue.flattened_parameters().tofile(cfg.bin_model_save_path)
+          torch.save(nnue.state_dict(), cfg.model_save_path)
 
-        train_step(M, sample_to_device(sample), opt, queue, max_queue_size=cfg.max_queue_size, report=(0 == i % cfg.report_rate))
+        train_step(nnue, sample_to_device(sample), opt, queue, max_queue_size=cfg.max_queue_size, report=(0 == i % cfg.report_rate))
         total_steps += 1
 
       scheduler.step()
