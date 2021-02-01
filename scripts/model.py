@@ -96,16 +96,16 @@ class NNUE(nn.Module):
     joined = join_param(joined, self.black_affine.virtual_weight().t())
     joined = join_param(joined, self.black_affine.virtual_bias())
     # fc0
-    joined = join_param(joined, self.fc0.weight.data.t())
+    joined = join_param(joined, self.fc0.weight.data)
     joined = join_param(joined, self.fc0.bias.data)
     # fc1
-    joined = join_param(joined, self.fc1.weight.data.t())
+    joined = join_param(joined, self.fc1.weight.data)
     joined = join_param(joined, self.fc1.bias.data)
     # fc2
-    joined = join_param(joined, self.fc2.weight.data.t())
+    joined = join_param(joined, self.fc2.weight.data)
     joined = join_param(joined, self.fc2.bias.data)
     # fc3
-    joined = join_param(joined, self.fc3.weight.data.t())
+    joined = join_param(joined, self.fc3.weight.data)
     joined = join_param(joined, self.fc3.bias.data)
     return joined.astype(np.float32)
 

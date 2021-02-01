@@ -17,9 +17,9 @@ nnue = model.NNUE().to(cfg.device)
 if os.path.exists(cfg.model_save_path):
   print('Loading model ... ')
   nnue.load_state_dict(torch.load(cfg.model_save_path, map_location=cfg.device))
-else:
-  nnue.flattened_parameters().tofile(cfg.bin_model_save_path)
-  torch.save(nnue.state_dict(), cfg.model_save_path)
+
+nnue.flattened_parameters().tofile(cfg.bin_model_save_path)
+torch.save(nnue.state_dict(), cfg.model_save_path)
 
 num_total_parameters = sum(map(lambda x: torch.numel(x), nnue.parameters()))
 num_effective_parameters = len(nnue.flattened_parameters(log=False))

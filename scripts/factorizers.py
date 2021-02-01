@@ -6,5 +6,5 @@ def piece_position(i):
 def material(i):
   return (i % (12 * 64)) // 64
 
-def king_position_and_material(i):
+def king_position_times_material(i):
   return i // 64
