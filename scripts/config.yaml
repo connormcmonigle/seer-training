@@ -2,8 +2,10 @@ device: 'cuda'
 model_save_path: 'model/save.pt'
 bin_model_save_path: 'model/save.bin'
 
-base_position_count_target: 1_000_000_000
-pgn_src: '/media/connor/7F35A067038168A9/seer_train/lichess_db_standard_rated_2020-11.pgn'
+base_position_count_target: 2_000_000_000
+min_ply: 6
+pgn_src: '/media/connor/7F35A067038168A9/seer_train/elite.pgn'
+
 
 tb_cardinality: 6
 tb_path: /media/connor/7F35A067038168A9/6_man_tb/wdl/
@@ -14,7 +16,7 @@ root_path: '/media/connor/7F35A067038168A9/seer_train/data_root'
 epochs: 100000
 shuffle_buffer_size: 100_000
 
-mirror_probability: 0.42
+mirror_probability: 0.25
 batch_size: 1024
 
 visual_directory: 'visual'
@@ -24,4 +26,5 @@ report_rate: 50
 test_rate: 50
 max_queue_size: 128
 
-learning_rate: 0.8
+gamma: 0.95
+learning_rate: 0.25

@@ -7,8 +7,12 @@ import seer_train
 
 def position_count_n_man(root, n):
   r = seer_train.RawFenReader(seer_train.raw_n_man_path(root, n)).size()
-  t = seer_train.SampleReader(seer_train.train_n_man_path(root, n)).size()
-  
+
+  if os.path.exists(seer_train.train_n_man_path(root, n)):
+    t = seer_train.SampleReader(seer_train.train_n_man_path(root, n)).size()
+  else:
+    t = None
+
   return r, t
 
 def print_summary():
