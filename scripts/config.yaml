@@ -2,9 +2,9 @@ device: 'cuda'
 model_save_path: 'model/save.pt'
 bin_model_save_path: 'model/save.bin'
 
-base_position_count_target: 2_000_000_000
+base_position_count_target: 700_000_000
 min_ply: 6
-pgn_src: '/media/connor/7F35A067038168A9/seer_train/elite.pgn'
+pgn_src: '/media/connor/7F35A067038168A9/seer_train/src.pgn'
 
 
 tb_cardinality: 6
@@ -14,17 +14,19 @@ concurrency: 12
 root_path: '/media/connor/7F35A067038168A9/seer_train/data_root'
 
 epochs: 100000
-shuffle_buffer_size: 100_000
+shuffle_buffer_size: 200_000
 
-mirror_probability: 0.25
+mirror_probability: 0.45
 batch_size: 1024
 
 visual_directory: 'visual'
 
-save_rate: 1000
+save_rate: 1024
 report_rate: 50
 test_rate: 50
 max_queue_size: 128
 
-gamma: 0.95
-learning_rate: 0.25
+gamma: 0.05
+step_size: 100
+
+learning_rate: 1.0

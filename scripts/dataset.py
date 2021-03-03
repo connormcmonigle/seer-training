@@ -44,7 +44,7 @@ class StochasticMultiplexReader:
     self.probabilities = totals.astype(np.float) / float(self.size_)
 
     reader_names = ', \n  '.join([f'{r.name()} : {p}' for r, p in zip(readers, self.probabilities)])
-    self.name_ = f'StochasticMultiplexReader(\n  {reader_names})'
+    self.name_ = f'StochasticMultiplexReader(cardinality={self.size_},\n  [{reader_names}])'
 
   def configure_subset(self, process_id, num_processes):
     assert process_id < num_processes

@@ -62,6 +62,13 @@ struct session{
 
   void load_weights(const std::string& path){ interface_.load_weights(path); }
 
+  std::string get_raw_path() const {
+    return root_ + std::string(path_delimiter) + std::string(raw_dir) + std::string(path_delimiter);
+  }
+
+  std::string get_train_path() const {
+    return root_ + std::string(path_delimiter) + std::string(train_dir) + std::string(path_delimiter);
+  }
 
   std::string get_n_man_train_path(const size_t& n) const {
     return train_n_man_path(root_, n);

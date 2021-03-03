@@ -58,6 +58,8 @@ PYBIND11_MODULE(seer_train, m){
     .def("load_weights", &train::session::load_weights)
     .def("concurrency", &train::session::concurrency)
     .def("set_concurrency", &train::session::set_concurrency)
+    .def("get_train_path", &train::session::get_train_path)
+    .def("get_raw_path", &train::session::get_raw_path)
     .def("get_n_man_train_path", &train::session::get_n_man_train_path)
     .def("get_n_man_raw_path", &train::session::get_n_man_raw_path)
     .def("maybe_generate_links_for", &train::session::maybe_generate_links_for, py::call_guard<py::gil_scoped_release>());
