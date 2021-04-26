@@ -60,19 +60,19 @@ class FeatureTransformer(nn.Module):
 class NNUE(nn.Module):
   def __init__(self):
     super(NNUE, self).__init__()
-    BASE = 128
+    BASE = 160
     funcs = [factorizers.piece_position,]
 
     self.white_affine = FeatureTransformer(funcs, BASE)
     self.black_affine = FeatureTransformer(funcs, BASE)
     self.d0 = nn.Dropout(p=0.05)
-    self.fc0 = nn.Linear(2*BASE, 32)
-    self.d1 = nn.Dropout(p=0.1)
-    self.fc1 = nn.Linear(32, 32)
-    self.d2 = nn.Dropout(p=0.1)
-    self.fc2 = nn.Linear(64, 32)
-    self.d3 = nn.Dropout(p=0.1)
-    self.fc3 = nn.Linear(96, 3)
+    self.fc0 = nn.Linear(2*BASE, 16)
+    self.d1 = nn.Dropout(p=0.05)
+    self.fc1 = nn.Linear(16, 16)
+    self.d2 = nn.Dropout(p=0.05)
+    self.fc2 = nn.Linear(32, 16)
+    self.d3 = nn.Dropout(p=0.05)
+    self.fc3 = nn.Linear(48, 3)
     
 
   def forward(self, pov, white, black):
