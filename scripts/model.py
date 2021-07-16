@@ -3,7 +3,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-import util
 import factorizers
 import seer_train
 
@@ -72,7 +71,7 @@ class NNUE(nn.Module):
     self.d2 = nn.Dropout(p=0.05)
     self.fc2 = nn.Linear(32, 16)
     self.d3 = nn.Dropout(p=0.05)
-    self.fc3 = nn.Linear(48, 3)
+    self.fc3 = nn.Linear(48, 1)
     
 
   def forward(self, pov, white, black):
@@ -118,8 +117,6 @@ class NNUE(nn.Module):
     return joined.astype(np.float32)
 
 
-def loss_fn(prob, pred):
-  epsilon = 1e-12
-  entropy = -prob * prob.clamp(epsilon, 1-epsilon).log()
-  loss = -prob * F.log_softmax(pred, dim=-1)
-  return loss.mean() - entropy.mean()
+def loss_fn(score, pred):
+  loss = (score.sigmoid() - pred.sigmoid()) ** 2
+  return loss.mean()

@@ -5,7 +5,6 @@ import model
 import config
 import seer_train
 import dataset
-import util
 import train
 
 
@@ -35,5 +34,5 @@ while True:
   sample = seer_train.Sample(state, (0, 0, 0))
   tensors = [t.unsqueeze(0) for t in dataset.sample_to_tensor(sample)]
   pov, w, b, _ = dataset.post_process(tensors)
-  prediction = nnue(pov, w, b).softmax(dim=-1)
+  prediction = nnue(pov, w, b)
   print(prediction)

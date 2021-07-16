@@ -14,19 +14,15 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconstexpr-steps=${OPS_LIMIT}")
 endif()
 
+add_compile_definitions(EVALFILE="eval.bin")
+
 include_directories (include ../seer-nnue/include/)
 
 add_executable(test_sample_reader test/test_sample_reader.cc)
 target_link_libraries (test_sample_reader Threads::Threads)
 
-add_executable(test_continuation test/test_continuation.cc)
-target_link_libraries (test_continuation Threads::Threads)
-
-add_executable(test_generate_links test/test_generate_links.cc)
-target_link_libraries (test_generate_links Threads::Threads)
-
-add_executable(test_line_count_size test/test_line_count_size.cc)
-target_link_libraries (test_generate_links Threads::Threads)
+add_executable(test_data_gen test/test_data_gen.cc)
+target_link_libraries (test_data_gen Threads::Threads)
 
 add_subdirectory(pybind11)
 pybind11_add_module(seer_train src/seer_train.cc)

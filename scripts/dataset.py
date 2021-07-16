@@ -6,7 +6,6 @@ import chess
 import functools
 import torch.nn.functional as F
 import numpy as np
-import util
 import seer_train
 
 
@@ -77,7 +76,7 @@ def active_to_tensor(active):
 def sample_to_tensor(sample):
   w = active_to_tensor(sample.features().white)
   b = active_to_tensor(sample.features().black)
-  p = torch.tensor([sample.win(), sample.draw(), sample.loss()]).float()
+  p = torch.tensor([sample.score()]).float()
   return torch.tensor([sample.pov()]).float(), w, b, p
 
 

@@ -3,14 +3,10 @@ import torch
 import config
 import seer_train
 import dataset
-import util
-import train
 
 cfg = config.Config('config.yaml')
-sess = seer_train.Session(cfg.root_path)
 
-
-reader = dataset.StochasticMultiplexReader([dataset.DataReader(sess.get_n_man_train_path(2)), dataset.DataReader(sess.get_n_man_train_path(7))])
+reader = dataset.StochasticMultiplexReader(list(map(lambda path: dataset.DataReader(path), cfg.data_read_paths)))
 
 print(reader.name())
 

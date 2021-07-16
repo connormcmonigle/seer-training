@@ -3,7 +3,6 @@ import torch
 import matplotlib.pyplot as plt
 
 import config
-import util
 import model
 
 
