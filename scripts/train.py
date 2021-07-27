@@ -12,9 +12,9 @@ import model
 
 
 def train_step(nnue, sample, opt, queue, max_queue_size, report=False):
-  pov, white, black, score = sample
+  pov, white, black, score, result = sample
   pred = nnue(pov, white, black)
-  loss = model.loss_fn(score, pred)
+  loss = model.loss_fn(score, result, pred)
   if report:
     print(loss.item())
   loss.backward()
@@ -40,10 +40,9 @@ def main():
 
   queue = []
   total_steps = 0
-
+  
+  reader = dataset.StochasticMultiplexReader(list(map(lambda path: dataset.DataReader(path), cfg.data_read_paths)))
   for epoch in range(cfg.epochs):
-    reader = dataset.StochasticMultiplexReader(list(map(lambda path: dataset.DataReader(path), cfg.data_read_paths)))
-
     print(f'training on: {reader.name()}')
     train_data = dataset.SeerData(reader, cfg)
     

@@ -77,7 +77,8 @@ def sample_to_tensor(sample):
   w = active_to_tensor(sample.features().white)
   b = active_to_tensor(sample.features().black)
   p = torch.tensor([sample.score()]).float()
-  return torch.tensor([sample.pov()]).float(), w, b, p
+  z = torch.tensor([sample.result()]).float()
+  return torch.tensor([sample.pov()]).float(), w, b, p, z
 
 
 def worker_init_fn(worker_id):
@@ -130,6 +131,6 @@ def to_sparse(x):
 
 
 def post_process(x):
-  pov, w, b, p = x
+  pov, w, b, p, z = x
   w, b = to_sparse(w), to_sparse(b)
-  return pov, w, b, p
+  return pov, w, b, p, z

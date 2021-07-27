@@ -3,16 +3,16 @@ model_save_path: 'model/save.pt'
 bin_model_save_path: 'model/save.bin'
 
 concurrency: 12
+fixed_depth: 6
 data_write_path: '/media/connor/7F35A067038168A9/seer_train3/data.txt'
 tt_mb_size: 4096
-target_sample_count: 300000000
-
+target_sample_count: 536870912
 
 data_read_paths: ['/media/connor/7F35A067038168A9/seer_train3/data.txt']
 
 
 epochs: 100000
-shuffle_buffer_size: 200_000
+shuffle_buffer_size: 200000
 
 mirror_probability: 0.45
 batch_size: 1024
@@ -27,4 +27,4 @@ max_queue_size: 128
 gamma: 0.05
 step_size: 100
 
-learning_rate: 1.0
+learning_rate: 0.09

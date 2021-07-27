@@ -117,6 +117,7 @@ class NNUE(nn.Module):
     return joined.astype(np.float32)
 
 
-def loss_fn(score, pred):
-  loss = (score.sigmoid() - pred.sigmoid()) ** 2
+def loss_fn(score, result, pred):
+  lambda_ = 0.6
+  loss = lambda_ * (score.sigmoid() - pred.sigmoid()) ** 2 + (1.0 - lambda_) * (result - pred.sigmoid()) ** 2
   return loss.mean()

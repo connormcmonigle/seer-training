@@ -13,7 +13,7 @@ def to_image(x):
 
   # height ---- width
   x = x.permute(0,5,6,2,  1,4,7,3)
-  x = (x.reshape(8*6*8*8, 20*2*8*8) * 3.0).abs().sigmoid()
+  x = (x.reshape(8*6*8*8, 20*2*8*8) * 6.0).abs().sigmoid()
   return x
 
 

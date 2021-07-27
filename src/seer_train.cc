@@ -26,6 +26,7 @@ PYBIND11_MODULE(seer_train, m){
     .def("mirrored", &train::sample::mirrored)
     .def("pov", &train::sample::pov)
     .def("score", &train::sample::score)
+    .def("result", &train::sample::result)
     .def("to_string", &train::sample::to_string);
 
   py::class_<train::sample_writer>(m, "SampleWriter")
@@ -43,6 +44,7 @@ PYBIND11_MODULE(seer_train, m){
     .def("set_fixed_depth", &train::data_generator::set_fixed_depth)
     .def("set_ply_limit", &train::data_generator::set_ply_limit)
     .def("set_random_ply", &train::data_generator::set_random_ply)
+    .def("set_eval_limit", &train::data_generator::set_eval_limit)
     .def("generate_data", &train::data_generator::generate_data);
 
     
