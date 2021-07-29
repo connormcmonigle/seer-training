@@ -27,4 +27,4 @@ max_queue_size: 128
 gamma: 0.05
 step_size: 100
 
-learning_rate: 0.09
+learning_rate: 1.0

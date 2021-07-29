@@ -40,7 +40,7 @@ struct sample{
     return state_.fen() + sample::field_delimiter + std::to_string(score_) + sample::field_delimiter + result_to_char(result_);
   }
 
-  sample mirrored() const { return sample(state_.mirrored(), score_); }
+  sample mirrored() const { return sample(state_.mirrored(), score_).set_result(result_); }
 
   static sample from_string(const std::string& sample_str){
     sample x{};
