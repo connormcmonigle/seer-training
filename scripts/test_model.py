@@ -11,11 +11,11 @@ import train
 
 cfg = config.Config('config.yaml')
 
-nnue = model.NNUE().to(cfg.device)
+nnue = model.NNUE().to('cpu')
 
 if os.path.exists(cfg.model_save_path):
   print('Loading model ... ')
-  nnue.load_state_dict(torch.load(cfg.model_save_path, map_location=cfg.device))
+  nnue.load_state_dict(torch.load(cfg.model_save_path, map_location='cpu'))
 
 nnue.flattened_parameters().tofile(cfg.bin_model_save_path)
 torch.save(nnue.state_dict(), cfg.model_save_path)
@@ -31,8 +31,8 @@ nnue.eval()
 
 while True:
   state = seer_train.StateType.parse_fen(input('fen: '))
-  sample = seer_train.Sample(state, (0, 0, 0))
+  sample = seer_train.Sample(state, 0)
   tensors = [t.unsqueeze(0) for t in dataset.sample_to_tensor(sample)]
-  pov, w, b, _ = dataset.post_process(tensors)
+  pov, w, b, _, _ = dataset.post_process(tensors)
   prediction = nnue(pov, w, b)
   print(prediction)

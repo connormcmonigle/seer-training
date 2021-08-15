@@ -14,7 +14,7 @@ struct sample{
 
   state_type state_{};
   score_type score_;
-  result_type result_{result_type::draw};
+  result_type result_{result_type::undefined};
 
   sample& set_result(const result_type& result) {
     result_ = result;
@@ -32,7 +32,7 @@ struct sample{
       case result_type::win: return 1.0;
       case result_type::draw: return 0.5;
       case result_type::loss: return 0.0;
-      default: return 0.5;
+      default: return sigmoid(score());
     }
   }
 
@@ -52,8 +52,7 @@ struct sample{
     x.state_ = state_type::parse_fen(sample_field);
     std::getline(ss, sample_field, field_delimiter);
     x.score_ = std::stoi(sample_field); 
-    std::getline(ss, sample_field, field_delimiter);
-    x.result_ = result_from_char(sample_field[0]);
+    if (std::getline(ss, sample_field, field_delimiter)) { x.result_ = result_from_char(sample_field[0]); }
     return x;
   }
 
