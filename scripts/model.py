@@ -8,24 +8,25 @@ import seer_train
 
 
 class FactoredBlock(nn.Module):
-  def __init__(self, func, output_dim):
+  def __init__(self, func, input_dim, output_dim):
     super(FactoredBlock, self).__init__()
-    self.f = torch.tensor([func(i) for i in range(seer_train.half_feature_numel())], dtype=torch.long)
+    self.input_dim = input_dim
+    self.f = torch.tensor([func(i) for i in range(input_dim)], dtype=torch.long)
     self.inter_dim = 1 + self.f.max()
     self.weights = nn.Parameter(torch.zeros(self.inter_dim, output_dim))
 
   def virtual(self):
     with torch.no_grad():
-      identity = torch.tensor([i for i in range(seer_train.half_feature_numel())], dtype=torch.long)
+      identity = torch.tensor([i for i in range(self.input_dim)], dtype=torch.long)
       conversion = torch.sparse.FloatTensor(
         torch.stack([identity, self.f], dim=0),
-        torch.ones(seer_train.half_feature_numel()),
-        size=torch.Size([seer_train.half_feature_numel(), self.inter_dim])).to(self.weights.device)
+        torch.ones(self.input_dim),
+        size=torch.Size([self.input_dim, self.inter_dim])).to(self.weights.device)
       return (conversion.matmul(self.weights)).t()
 
   def factored(self, x):
     N, D = x.size()
-    assert D == seer_train.half_feature_numel()
+    assert D == self.input_dim
 
     batch, active = x._indices()
     factored = torch.gather(self.f.to(x.device), dim=0, index=active)
@@ -41,10 +42,10 @@ class FactoredBlock(nn.Module):
 
 
 class FeatureTransformer(nn.Module):
-  def __init__(self, funcs, base_dim):
+  def __init__(self, funcs, input_dim, base_dim):
     super(FeatureTransformer, self).__init__()
-    self.factored_blocks = nn.ModuleList([FactoredBlock(f, base_dim) for f in funcs])
-    self.affine = nn.Linear(seer_train.half_feature_numel(), base_dim)
+    self.factored_blocks = nn.ModuleList([FactoredBlock(f, input_dim, base_dim) for f in funcs])
+    self.affine = nn.Linear(input_dim, base_dim)
 
   def virtual_bias(self):
     return self.affine.bias.data
@@ -60,12 +61,21 @@ class NNUE(nn.Module):
   def __init__(self):
     super(NNUE, self).__init__()
     BASE = 160
+    P_BASE = 256
     funcs = [factorizers.piece_position,]
+    p_funcs = [factorizers.p_pawn_position,]
 
-    self.white_affine = FeatureTransformer(funcs, BASE)
-    self.black_affine = FeatureTransformer(funcs, BASE)
+    self.white_affine = FeatureTransformer(funcs, seer_train.half_feature_numel(), BASE)
+    self.black_affine = FeatureTransformer(funcs, seer_train.half_feature_numel(), BASE)
+    self.p_white_affine = FeatureTransformer(p_funcs, seer_train.half_pawn_feature_numel(), P_BASE)
+    self.p_black_affine = FeatureTransformer(p_funcs, seer_train.half_pawn_feature_numel(), P_BASE)
+
     self.d0 = nn.Dropout(p=0.05)
     self.fc0 = nn.Linear(2*BASE, 16)
+
+    self.p_fc0 = nn.Linear(2*P_BASE, 16)
+    self.p_fc1 = nn.Linear(16, 16)
+
     self.d1 = nn.Dropout(p=0.05)
     self.fc1 = nn.Linear(16, 16)
     self.d2 = nn.Dropout(p=0.05)
@@ -74,12 +84,19 @@ class NNUE(nn.Module):
     self.fc3 = nn.Linear(48, 1)
     
 
-  def forward(self, pov, white, black):
+  def forward(self, pov, white, black, p_white, p_black):
     w_ = self.white_affine(white)
     b_ = self.black_affine(black)
+    p_w_ = self.p_white_affine(p_white)
+    p_b_ = self.p_black_affine(p_black)
     base = F.relu(pov * torch.cat([w_, b_], dim=1) + (1.0 - pov) * torch.cat([b_, w_], dim=1))
-    base = self.d0(base)
-    x = F.relu(self.fc0(base))
+    p_base = F.relu(pov * torch.cat([p_w_, p_b_], dim=1) + (1.0 - pov) * torch.cat([p_b_, p_w_], dim=1))
+    base, p_base = self.d0(base), self.d0(p_base)
+    
+    p = F.relu(self.p_fc0(p_base))
+    p = self.p_fc1(p)
+
+    x = F.relu(self.fc0(base) + p)
     x = self.d1(x)
     x = torch.cat([x, F.relu(self.fc1(x))], dim=1)
     x = self.d2(x)
@@ -102,9 +119,21 @@ class NNUE(nn.Module):
     # black_affine
     joined = join_param(joined, self.black_affine.virtual_weight().t())
     joined = join_param(joined, self.black_affine.virtual_bias())
+    # p_white_affine
+    joined = join_param(joined, self.p_white_affine.virtual_weight().t())
+    joined = join_param(joined, self.p_white_affine.virtual_bias())
+    # p_black_affine
+    joined = join_param(joined, self.p_black_affine.virtual_weight().t())
+    joined = join_param(joined, self.p_black_affine.virtual_bias())
     # fc0
     joined = join_param(joined, self.fc0.weight.data)
     joined = join_param(joined, self.fc0.bias.data)
+    # p_fc0
+    joined = join_param(joined, self.p_fc0.weight.data)
+    joined = join_param(joined, self.p_fc0.bias.data)
+    # p_fc1
+    joined = join_param(joined, self.p_fc1.weight.data)
+    joined = join_param(joined, self.p_fc1.bias.data)
     # fc1
     joined = join_param(joined, self.fc1.weight.data)
     joined = join_param(joined, self.fc1.bias.data)

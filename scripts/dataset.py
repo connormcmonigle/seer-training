@@ -68,17 +68,21 @@ class StochasticMultiplexReader:
       items[idx] = next(iters[idx], None)
 
 
-def active_to_tensor(active):
-  N = seer_train.max_active_half_features()
+def active_to_tensor(active, max_active):
+  N = max_active
   return torch.tensor((list(active) + N*[-1])[:N], dtype=torch.long)
 
 
 def sample_to_tensor(sample):
-  w = active_to_tensor(sample.features().white)
-  b = active_to_tensor(sample.features().black)
+  features = sample.features()
+  pawn_features = sample.pawn_features()
+  w = active_to_tensor(features.white, seer_train.max_active_half_features())
+  b = active_to_tensor(features.black, seer_train.max_active_half_features())
+  p_w = active_to_tensor(pawn_features.white, seer_train.max_active_half_pawn_features())
+  p_b = active_to_tensor(pawn_features.black, seer_train.max_active_half_pawn_features())
   p = torch.tensor([sample.score()]).float()
   z = torch.tensor([sample.result()]).float()
-  return torch.tensor([sample.pov()]).float(), w, b, p, z
+  return torch.tensor([sample.pov()]).float(), w, b, p_w, p_b, p, z
 
 
 def worker_init_fn(worker_id):
@@ -119,18 +123,21 @@ class SeerData(torch.utils.data.IterableDataset):
       yield sample_to_tensor(sample.mirrored() if mirror else sample)
 
 
-def to_sparse(x):
-  N = seer_train.max_active_half_features()
+def to_sparse(x, dim, max_active):
+  N = max_active
   batch_idx = torch.arange(x.size(0)).unsqueeze(-1).expand(x.size(0), N)
   active_mask = x.ge(0)
   indices = torch.stack([batch_idx[active_mask], x[active_mask]], dim=0)
   return torch.sparse.FloatTensor(
     indices,
     torch.ones(active_mask.sum()),
-    torch.Size([x.size(0), seer_train.half_feature_numel()]))
+    torch.Size([x.size(0), dim]))
 
 
 def post_process(x):
-  pov, w, b, p, z = x
-  w, b = to_sparse(w), to_sparse(b)
-  return pov, w, b, p, z
+  pov, w, b, p_w, p_b, p, z = x
+  w = to_sparse(w, seer_train.half_feature_numel(), seer_train.max_active_half_features())
+  b = to_sparse(b, seer_train.half_feature_numel(), seer_train.max_active_half_features())
+  p_w = to_sparse(p_w, seer_train.half_pawn_feature_numel(), seer_train.max_active_half_pawn_features())
+  p_b = to_sparse(p_b, seer_train.half_pawn_feature_numel(), seer_train.max_active_half_pawn_features())
+  return pov, w, b, p_w, p_b, p, z

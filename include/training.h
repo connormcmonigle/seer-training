@@ -57,7 +57,9 @@ constexpr result_type mirrored_result(const result_type& result){
 }
 
 constexpr size_t half_feature_numel(){ return nnue::half_ka_numel; }
+constexpr size_t half_pawn_feature_numel(){ return nnue::half_pawn_numel; }
 constexpr size_t max_active_half_features(){ return nnue::max_active_half_features; }
+constexpr size_t max_active_half_pawn_features(){ return nnue::max_active_half_pawn_features; }
 
 real_type sigmoid(const real_type& x) {
   constexpr real_type one = static_cast<real_type>(1);
@@ -95,6 +97,12 @@ result_type relative_result(const bool& pov_a, const bool& pov_b, const result_t
 feature_set get_features(const state_type& state) {
   feature_set features{};
   state.show_init(features);
+  return features;
+}
+
+feature_set get_pawn_features(const state_type& state) {
+  feature_set features{};
+  state.show_pawn_init(features);
   return features;
 }
 

@@ -12,8 +12,8 @@ import model
 
 
 def train_step(nnue, sample, opt, queue, max_queue_size, report=False):
-  pov, white, black, score, result = sample
-  pred = nnue(pov, white, black)
+  pov, white, black, p_white, p_black, score, result = sample
+  pred = nnue(pov, white, black, p_white, p_black)
   loss = model.loss_fn(score, result, pred)
   if report:
     print(loss.item())

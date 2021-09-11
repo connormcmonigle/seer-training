@@ -24,6 +24,7 @@ struct sample{
   bool pov() const { return state_.turn(); }
 
   feature_set features(){ return get_features(state_); }
+  feature_set pawn_features(){ return get_pawn_features(state_); }
 
   double score() const { return static_cast<double>(score_) / search::logit_scale<double>; }
 

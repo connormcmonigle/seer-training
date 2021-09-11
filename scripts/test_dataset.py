@@ -6,7 +6,7 @@ import dataset
 
 cfg = config.Config('config.yaml')
 
-reader = dataset.StochasticMultiplexReader(list(map(lambda path: dataset.DataReader(path), cfg.data_read_paths)))
+reader = dataset.StochasticMultiplexReader(list([dataset.DataReader('/media/connor/7F35A067038168A9/seer_train3/test.txt')]))
 
 print(reader.name())
 

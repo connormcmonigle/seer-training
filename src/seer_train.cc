@@ -10,6 +10,8 @@ namespace py = pybind11;
 PYBIND11_MODULE(seer_train, m){
   m.def("half_feature_numel", train::half_feature_numel);
   m.def("max_active_half_features", train::max_active_half_features);
+  m.def("half_pawn_feature_numel", train::half_pawn_feature_numel);
+  m.def("max_active_half_pawn_features", train::max_active_half_pawn_features);
 
   py::class_<train::feature_set>(m, "FeatureSet")
     .def_readonly("white", &train::feature_set::white)
@@ -23,6 +25,7 @@ PYBIND11_MODULE(seer_train, m){
   py::class_<train::sample>(m, "Sample")
     .def(py::init<const train::state_type&, const train::score_type&>())
     .def("features", &train::sample::features)
+    .def("pawn_features", &train::sample::pawn_features)
     .def("mirrored", &train::sample::mirrored)
     .def("pov", &train::sample::pov)
     .def("score", &train::sample::score)
