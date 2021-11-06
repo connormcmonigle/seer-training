@@ -114,7 +114,10 @@ struct data_generator{
                 return result;
               }();
             
-              const search::score_type static_eval = evaluator.evaluate(state.turn());
+              const search::score_type static_eval = evaluator.evaluate(
+                state.turn(),
+                worker->internal.kpt_cache.encoding(state),
+                state.phase<real_type>());
 
               worker->go(hist, state, 1);
               const search::score_type q_eval = worker->q_search<true, false>(view, evaluator, state, search::mate_score, -search::mate_score, 0);

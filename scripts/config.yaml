@@ -10,16 +10,17 @@ target_sample_count: 300000000
 
 data_read_paths:
   [
-    "/media/connor/7F35A067038168A9/seer_train3/data_d8_wdl2.txt",
-    "/media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf.txt",
-    "/media/connor/7F35A067038168A9/seer_train3/data_old_d8_wdl.txt",
+    /media/connor/7F35A067038168A9/seer_train3/data_old_d8_wdl2.txt,
+    /media/connor/7F35A067038168A9/seer_train3/data_old_d8_wdl.txt,
+    /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d6_wdl2.txt,
+    /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d6_wdl3.txt
   ]
 
 epochs: 100000
 shuffle_buffer_size: 200000
 
-mirror_probability: 0.48
-batch_size: 2048
+mirror_probability: 0.49
+batch_size: 1024
 
 visual_directory: "visual"
 

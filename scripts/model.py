@@ -70,17 +70,13 @@ class NNUE(nn.Module):
     self.p_white_affine = FeatureTransformer(p_funcs, seer_train.half_pawn_feature_numel(), P_BASE)
     self.p_black_affine = FeatureTransformer(p_funcs, seer_train.half_pawn_feature_numel(), P_BASE)
 
-    self.d0 = nn.Dropout(p=0.05)
     self.fc0 = nn.Linear(2*BASE, 16)
 
     self.p_fc0 = nn.Linear(2*P_BASE, 16)
     self.p_fc1 = nn.Linear(16, 16)
 
-    self.d1 = nn.Dropout(p=0.05)
     self.fc1 = nn.Linear(16, 16)
-    self.d2 = nn.Dropout(p=0.05)
     self.fc2 = nn.Linear(32, 16)
-    self.d3 = nn.Dropout(p=0.05)
     self.fc3 = nn.Linear(48, 1)
     
 
@@ -91,17 +87,14 @@ class NNUE(nn.Module):
     p_b_ = self.p_black_affine(p_black)
     base = F.relu(pov * torch.cat([w_, b_], dim=1) + (1.0 - pov) * torch.cat([b_, w_], dim=1))
     p_base = F.relu(pov * torch.cat([p_w_, p_b_], dim=1) + (1.0 - pov) * torch.cat([p_b_, p_w_], dim=1))
-    base, p_base = self.d0(base), self.d0(p_base)
+    base, p_base = base, p_base
     
     p = F.relu(self.p_fc0(p_base))
     p = self.p_fc1(p)
 
     x = F.relu(self.fc0(base) + p)
-    x = self.d1(x)
     x = torch.cat([x, F.relu(self.fc1(x))], dim=1)
-    x = self.d2(x)
     x = torch.cat([x, F.relu(self.fc2(x))], dim=1)
-    x = self.d3(x)
     x = self.fc3(x)
     return x
 
