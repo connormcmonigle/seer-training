@@ -62,8 +62,7 @@ class NNUE(nn.Module):
     BASE = 160
     funcs = [factorizers.piece_position,]
 
-    self.white_affine = FeatureTransformer(funcs, BASE)
-    self.black_affine = FeatureTransformer(funcs, BASE)
+    self.shared_affine = FeatureTransformer(funcs, BASE)
     self.fc0 = nn.Linear(2*BASE, 16)
     self.fc1 = nn.Linear(16, 16)
     self.fc2 = nn.Linear(32, 16)
@@ -71,8 +70,8 @@ class NNUE(nn.Module):
     
 
   def forward(self, pov, white, black):
-    w_ = self.white_affine(white)
-    b_ = self.black_affine(black)
+    w_ = self.shared_affine(white)
+    b_ = self.shared_affine(black)
     base = F.relu(pov * torch.cat([w_, b_], dim=1) + (1.0 - pov) * torch.cat([b_, w_], dim=1))
     x = F.relu(self.fc0(base))
     x = torch.cat([x, F.relu(self.fc1(x))], dim=1)
@@ -88,12 +87,9 @@ class NNUE(nn.Module):
       return joined
     
     joined = np.array([])
-    # white_affine
-    joined = join_param(joined, self.white_affine.virtual_weight().t())
-    joined = join_param(joined, self.white_affine.virtual_bias())
-    # black_affine
-    joined = join_param(joined, self.black_affine.virtual_weight().t())
-    joined = join_param(joined, self.black_affine.virtual_bias())
+    # shared_affine
+    joined = join_param(joined, self.shared_affine.virtual_weight().t())
+    joined = join_param(joined, self.shared_affine.virtual_bias())
     # fc0
     joined = join_param(joined, self.fc0.weight.data)
     joined = join_param(joined, self.fc0.bias.data)

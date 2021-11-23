@@ -68,12 +68,12 @@ struct data_generator{
   }
 
   data_generator& generate_data() {
-    nnue::weights<real_type> weights{};
-    nnue::embedded_weight_streamer<real_type> embedded(embed::weights_file_data);
+    nnue::weights weights{};
+    nnue::embedded_weight_streamer embedded(embed::weights_file_data);
     weights.load(embedded);
     
     auto generate = [&, this]{
-      using worker_type = chess::thread_worker<real_type, false>;
+      using worker_type = chess::thread_worker<false>;
       auto gen = std::mt19937(std::random_device()());
 
       std::unique_ptr<worker_type> worker = std::make_unique<worker_type>(&weights, tt_, constants_, [&, this](const auto& w) {
@@ -109,12 +109,12 @@ struct data_generator{
 
               const auto view = search::stack_view::root((worker->internal).stack);
               const auto evaluator = [&] {
-                nnue::eval<real_type> result(&weights);
-                state.show_init(result);
+                nnue::eval result(&weights);
+                state.feature_full_refresh(result);
                 return result;
               }();
             
-              const search::score_type static_eval = evaluator.evaluate(state.turn());
+              const search::score_type static_eval = evaluator.evaluate(state.turn(), state.phase<real_type>());
 
               worker->go(hist, state, 1);
               const search::score_type q_eval = worker->q_search<true, false>(view, evaluator, state, search::mate_score, -search::mate_score, 0);
