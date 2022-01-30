@@ -2,25 +2,27 @@ device: "cuda"
 model_save_path: "model/save.pt"
 bin_model_save_path: "model/save.bin"
 
-concurrency: 12
-fixed_depth: 8
+concurrency: 5
+fixed_depth: 10
 data_write_path: "/media/connor/7F35A067038168A9/seer_train3/data.txt"
 tt_mb_size: 8192
-target_sample_count: 300000000
+target_sample_count: 150000000
 
 data_read_paths:
   [
-    /media/connor/7F35A067038168A9/seer_train3/data_old_d8_wdl2.txt,
-    /media/connor/7F35A067038168A9/seer_train3/data_old_d8_wdl.txt,
     /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d6_wdl2.txt,
-    /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d6_wdl3.txt
+    /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d6_wdl3.txt,
+    /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d10_wdl.txt,
+    /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d10_wdl2.txt,
+    /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d8_wdl.txt,
+    /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d8_wdl2.txt,
   ]
 
 epochs: 100000
 shuffle_buffer_size: 200000
 
 mirror_probability: 0.5
-batch_size: 2048
+batch_size: 1024
 
 visual_directory: "visual"
 
@@ -32,4 +34,4 @@ max_queue_size: 128
 gamma: 0.05
 step_size: 100
 
-learning_rate: 1.0
+learning_rate: 0.07

@@ -68,9 +68,12 @@ struct data_generator{
   }
 
   data_generator& generate_data() {
-    nnue::weights weights{};
-    nnue::embedded_weight_streamer embedded(embed::weights_file_data);
-    weights.load(embedded);
+    const nnue::weights weights = [&, this]{
+      nnue::weights result{};
+      nnue::embedded_weight_streamer embedded(embed::weights_file_data);
+      result.load(embedded);
+      return result;
+    }();
     
     auto generate = [&, this]{
       using worker_type = chess::thread_worker<false>;
