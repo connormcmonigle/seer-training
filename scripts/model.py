@@ -59,7 +59,7 @@ class FeatureTransformer(nn.Module):
 class NNUE(nn.Module):
   def __init__(self):
     super(NNUE, self).__init__()
-    BASE = 160
+    BASE = 256
     funcs = [factorizers.piece_position,]
 
     self.shared_affine = FeatureTransformer(funcs, BASE)
