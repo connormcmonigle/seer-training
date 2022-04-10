@@ -59,14 +59,14 @@ class FeatureTransformer(nn.Module):
 class NNUE(nn.Module):
   def __init__(self):
     super(NNUE, self).__init__()
-    BASE = 256
+    BASE = 384
     funcs = [factorizers.piece_position,]
 
     self.shared_affine = FeatureTransformer(funcs, BASE)
-    self.fc0 = nn.Linear(2*BASE, 16)
-    self.fc1 = nn.Linear(16, 16)
-    self.fc2 = nn.Linear(32, 16)
-    self.fc3 = nn.Linear(48, 1)
+    self.fc0 = nn.Linear(2*BASE, 8)
+    self.fc1 = nn.Linear(8, 8)
+    self.fc2 = nn.Linear(16, 8)
+    self.fc3 = nn.Linear(24, 1)
     
 
   def forward(self, pov, white, black):
