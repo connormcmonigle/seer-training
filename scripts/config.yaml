@@ -1,8 +1,9 @@
 device: "cuda"
+fine_tune: True
 model_save_path: "model/save.pt"
 bin_model_save_path: "model/save.bin"
 
-concurrency: 5
+concurrency: 12
 fixed_depth: 10
 data_write_path: "/media/connor/7F35A067038168A9/seer_train3/data.txt"
 tt_mb_size: 8192
@@ -35,4 +36,4 @@ max_queue_size: 128
 gamma: 0.05
 step_size: 100
 
-learning_rate: 0.07
+learning_rate: 1.0

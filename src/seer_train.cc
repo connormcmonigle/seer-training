@@ -10,6 +10,7 @@ namespace py = pybind11;
 PYBIND11_MODULE(seer_train, m){
   m.def("half_feature_numel", train::half_feature_numel);
   m.def("max_active_half_features", train::max_active_half_features);
+  m.def("feature_transformer_parameters", train::feature_transformer_parameters);
 
   py::class_<train::feature_set>(m, "FeatureSet")
     .def_readonly("white", &train::feature_set::white)

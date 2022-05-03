@@ -37,8 +37,8 @@ struct data_generator{
   search::depth_type fixed_depth_{6};
   score_type eval_limit_{6144};
 
-  std::shared_ptr<chess::transposition_table> tt_{nullptr};
-  std::shared_ptr<search::constants> constants_ = std::make_shared<search::constants>(1);
+  std::shared_ptr<search::transposition_table> tt_{nullptr};
+  std::shared_ptr<search::search_constants> constants_ = std::make_shared<search::search_constants>(1);
 
   data_writer writer_;
 
@@ -76,7 +76,7 @@ struct data_generator{
     }();
     
     auto generate = [&, this]{
-      using worker_type = chess::thread_worker<false>;
+      using worker_type = search::search_worker<false>;
       auto gen = std::mt19937(std::random_device()());
 
       std::unique_ptr<worker_type> worker = std::make_unique<worker_type>(&weights, tt_, constants_, [&, this](const auto& w) {
@@ -120,7 +120,8 @@ struct data_generator{
               const search::score_type static_eval = evaluator.evaluate(state.turn(), state.phase<real_type>());
 
               worker->go(hist, state, 1);
-              const search::score_type q_eval = worker->q_search<true, false>(view, evaluator, state, search::mate_score, -search::mate_score, 0);
+              nnue::eval_node node = nnue::eval_node::clean_node(evaluator);
+              const search::score_type q_eval = worker->q_search<true, false>(view, node, state, search::mate_score, -search::mate_score, 0);
               worker->stop();
 
               if (!state.is_check() && static_eval == q_eval) { block.emplace_back(state, best_score); }
@@ -146,7 +147,7 @@ struct data_generator{
   }
 
   data_generator(const std::string& path, const size_t& total, const size_t& tt_mb_size) : writer_{path, total} {
-    tt_ = std::make_shared<chess::transposition_table>(tt_mb_size);
+    tt_ = std::make_shared<search::transposition_table>(tt_mb_size);
   }
 };
 

@@ -5,7 +5,9 @@
 #include <move.h>
 #include <nnue_model.h>
 #include <search_constants.h>
-#include <thread_worker.h>
+#include <search_worker.h>
+#include <embedded_weights.h>
+#include <weights_streamer.h>
 
 #include <atomic>
 #include <chrono>
@@ -97,6 +99,15 @@ feature_set get_features(const state_type& state) {
   feature_set features{};
   state.feature_full_refresh(features);
   return features;
+}
+
+std::tuple<std::vector<nnue::weights::parameter_type>, std::vector<nnue::weights::parameter_type>> feature_transformer_parameters() {
+  nnue::embedded_weight_streamer streamer(embed::weights_file_data);
+  using feature_transformer_type = nnue::big_affine<nnue::weights::parameter_type, feature::half_ka::numel, nnue::weights::base_dim>;
+  feature_transformer_type feature_transformer = nnue::weights{}.load(streamer).shared;
+  std::vector<nnue::weights::parameter_type> weights(feature_transformer.W, feature_transformer.W + feature_transformer_type::W_numel);
+  std::vector<nnue::weights::parameter_type> bias(feature_transformer.b, feature_transformer.b + feature_transformer_type::b_numel);
+  return std::tuple(weights, bias);
 }
 
 }  // namespace train

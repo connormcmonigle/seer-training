@@ -11,7 +11,7 @@ import train
 
 cfg = config.Config('config.yaml')
 
-nnue = model.NNUE().to('cpu')
+nnue = model.NNUE(fine_tune=True).to('cpu')
 
 if os.path.exists(cfg.model_save_path):
   print('Loading model ... ')

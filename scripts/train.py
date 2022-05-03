@@ -28,7 +28,8 @@ def train_step(nnue, sample, opt, queue, max_queue_size, report=False):
 def main():
   cfg = config.Config('config.yaml')
   sample_to_device = lambda x: tuple(map(lambda t: t.to(cfg.device, non_blocking=True), dataset.post_process(x)))
-  nnue = model.NNUE().to(cfg.device)
+  print(f"fine_tune: {cfg.fine_tune}")
+  nnue = model.NNUE(fine_tune=cfg.fine_tune).to(cfg.device)
 
   if (os.path.exists(cfg.model_save_path)):
     print('Loading model ... ')

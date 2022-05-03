@@ -23,7 +23,7 @@ class DataReader:
     self.num_processes = num_processes
 
   def size(self):
-    return self.size_
+    return (self.size_ // self.num_processes) + (self.process_id < (self.size_ % self.num_processes))
 
   def name(self):
     return f'DataReader({self.path})'
@@ -38,12 +38,8 @@ class DataReader:
 class StochasticMultiplexReader:
   def __init__(self, readers):
     self.readers = readers
-    totals = np.array([reader.size() for reader in self.readers])
-    self.size_ = totals.sum()
-    self.probabilities = totals.astype(np.float) / float(self.size_)
-
-    reader_names = ', \n  '.join([f'{r.name()} : {p}' for r, p in zip(readers, self.probabilities)])
-    self.name_ = f'StochasticMultiplexReader(cardinality={self.size_},\n  [{reader_names}])'
+    reader_names = ', \n  '.join([f'{r.name()} : {p}' for r, p in zip(readers, [reader.size() for reader in self.readers])])
+    self.name_ = f'StochasticMultiplexReader(cardinality={self.size()},\n  [{reader_names}])'
 
   def configure_subset(self, process_id, num_processes):
     assert process_id < num_processes
@@ -54,19 +50,20 @@ class StochasticMultiplexReader:
     return self.name_
 
   def size(self):
-    return self.size_
+    return sum(reader.size() for reader in self.readers)
 
   def __iter__(self):
+    remaining = np.array([reader.size() for reader in self.readers])
     iters = [iter(reader) for reader in self.readers]
     items = [next(it, None) for it in iters]
 
-    while functools.reduce(lambda a, b: a if b is None else b, items) is not None:
-      idx = np.random.choice(len(items), p=self.probabilities)
+    while (remaining > 0).any():
+      probabilities = remaining / remaining.sum()
+      idx = np.random.choice(len(items), p=probabilities)
       if items[idx] is not None:
         yield items[idx]
-
-      items[idx] = next(iters[idx], None)
-
+        items[idx] = next(iters[idx], None)
+        remaining[idx] -= 1
 
 def active_to_tensor(active):
   N = seer_train.max_active_half_features()

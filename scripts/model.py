@@ -56,18 +56,39 @@ class FeatureTransformer(nn.Module):
     return self.affine(x) + sum([block(x) for block in self.factored_blocks])
 
 
+class FrozenFeatureTransformer(nn.Module):
+  def __init__(self, base_dim, quantization_scale=512.0):
+    super(FrozenFeatureTransformer, self).__init__()
+    self.quantization_scale = quantization_scale
+    self.inverse_quantization_scale = quantization_scale ** -1
+    weights, biases = seer_train.feature_transformer_parameters()
+    weights, biases = torch.tensor(weights).reshape(seer_train.half_feature_numel(), base_dim), torch.tensor(biases)
+    self.register_buffer("frozen_weights", weights)
+    self.register_buffer("frozen_biases", biases)
+    self.register_buffer("frozen_quantized_weights", weights.mul(quantization_scale).round().short())
+    self.register_buffer("frozen_quantized_biases", biases.mul(quantization_scale).round().short())
+
+  def virtual_bias(self):
+    return self.frozen_biases.data
+
+  def virtual_weight(self):
+    return self.frozen_weights.data.t()
+
+  def forward(self, x):
+    return (x @ self.frozen_quantized_weights.float() + self.frozen_quantized_biases.float()).mul(self.inverse_quantization_scale)
+
+
 class NNUE(nn.Module):
-  def __init__(self):
+  def __init__(self, fine_tune=False):
     super(NNUE, self).__init__()
     BASE = 384
     funcs = [factorizers.piece_position,]
 
-    self.shared_affine = FeatureTransformer(funcs, BASE)
+    self.shared_affine = FrozenFeatureTransformer(BASE) if fine_tune else FeatureTransformer(funcs, BASE)
     self.fc0 = nn.Linear(2*BASE, 8)
     self.fc1 = nn.Linear(8, 8)
     self.fc2 = nn.Linear(16, 8)
     self.fc3 = nn.Linear(24, 1)
-    
 
   def forward(self, pov, white, black):
     w_ = self.shared_affine(white)
