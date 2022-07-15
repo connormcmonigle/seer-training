@@ -35,6 +35,8 @@ struct data_generator{
   search::depth_type ply_limit_{256};
   search::depth_type random_ply_{10};
   search::depth_type fixed_depth_{6};
+  size_t fixed_nodes_{5120};
+
   score_type eval_limit_{6144};
 
   std::shared_ptr<search::transposition_table> tt_{nullptr};
@@ -49,6 +51,11 @@ struct data_generator{
 
   data_generator& set_fixed_depth(const search::depth_type& fixed_depth){
     fixed_depth_ = fixed_depth;
+    return *this;
+  }
+
+  data_generator& set_fixed_nodes(const size_t& fixed_nodes) {
+    fixed_nodes_ = fixed_nodes;
     return *this;
   }
 
@@ -79,9 +86,12 @@ struct data_generator{
       using worker_type = search::search_worker<false>;
       auto gen = std::mt19937(std::random_device()());
 
-      std::unique_ptr<worker_type> worker = std::make_unique<worker_type>(&weights, tt_, constants_, [&, this](const auto& w) {
-        if (w.depth() >= fixed_depth_) { worker->stop(); }
-      });
+
+      std::unique_ptr<worker_type> worker = std::make_unique<worker_type>(
+        &weights, tt_, constants_,
+        [&, this](const auto& w) { if (w.depth() >= fixed_depth_) { worker->stop(); } },
+        [&, this](const auto& w) { if (w.nodes() >= fixed_nodes_) { worker->stop(); } }
+      );
 
       while (!writer_.is_complete()) {
         (worker->internal).reset();

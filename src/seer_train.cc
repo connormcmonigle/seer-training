@@ -43,6 +43,7 @@ PYBIND11_MODULE(seer_train, m){
     .def(py::init<const std::string&, const size_t&, const size_t&>())
     .def("set_concurrency", &train::data_generator::set_concurrency)
     .def("set_fixed_depth", &train::data_generator::set_fixed_depth)
+    .def("set_fixed_nodes", &train::data_generator::set_fixed_nodes)
     .def("set_ply_limit", &train::data_generator::set_ply_limit)
     .def("set_random_ply", &train::data_generator::set_random_ply)
     .def("set_eval_limit", &train::data_generator::set_eval_limit)
