@@ -1,6 +1,5 @@
 cmake_minimum_required (VERSION 3.10)
 project (training)
-
 find_package (Threads REQUIRED)
 
 set (CMAKE_CXX_STANDARD 17)
@@ -12,18 +11,19 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconstexpr-ops-limit=${OPS_LIMIT}")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconstexpr-steps=${OPS_LIMIT}")
-endif()
+endif ()
 
-add_compile_definitions(EVALFILE="eval.bin")
+message (STATUS "EVALFILE=${EVALFILE}")
+add_compile_definitions(EVALFILE="${EVALFILE}")
 
-include_directories (include ../seer-nnue/include/ ../seer-nnue/incbin/ ../seer-nnue/syzygy/)
+include_directories (include seer-nnue/include/ seer-nnue/incbin/ seer-nnue/syzygy/)
 
-add_executable(test_sample_reader test/test_sample_reader.cc ../seer-nnue/syzygy/tbchess.c ../seer-nnue/syzygy/tbprobe.c)
+add_executable (test_sample_reader test/test_sample_reader.cc seer-nnue/syzygy/tbchess.c seer-nnue/syzygy/tbprobe.c)
 target_link_libraries (test_sample_reader Threads::Threads)
 
-add_executable(test_data_gen test/test_data_gen.cc ../seer-nnue/syzygy/tbchess.c ../seer-nnue/syzygy/tbprobe.c)
+add_executable (test_data_gen test/test_data_gen.cc seer-nnue/syzygy/tbchess.c seer-nnue/syzygy/tbprobe.c)
 target_link_libraries (test_data_gen Threads::Threads)
 
 add_subdirectory(pybind11)
-pybind11_add_module(seer_train src/seer_train.cc ../seer-nnue/syzygy/tbchess.c ../seer-nnue/syzygy/tbprobe.c)
+pybind11_add_module(seer_train src/seer_train.cc seer-nnue/syzygy/tbchess.c seer-nnue/syzygy/tbprobe.c)
 
