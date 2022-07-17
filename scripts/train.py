@@ -58,7 +58,7 @@ def main():
 
     reader = dataset.StochasticMultiplexReader(
         [dataset.DataReader(path) for path in cfg.data_read_paths])
-    for epoch in range(cfg.epochs):
+    for _ in range(cfg.epochs):
         print(f'training on: {reader.name()}')
         train_data = dataset.SeerData(reader, cfg)
 
