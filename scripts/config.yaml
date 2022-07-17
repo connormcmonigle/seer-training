@@ -1,9 +1,9 @@
 device: "cuda"
-fine_tune: True
+fine_tune: False
 model_save_path: "model/save.pt"
 bin_model_save_path: "model/save.bin"
 
-concurrency: 5
+concurrency: 8
 fixed_depth: 128
 fixed_nodes: 5120
 data_write_path: "/media/connor/7F35A067038168A9/seer_train3/data.txt"
@@ -12,6 +12,7 @@ target_sample_count: 600000000
 
 data_read_paths:
   [
+    /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_n5120_wdl.txt,
     /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d6_wdl2.txt,
     /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d6_wdl3.txt,
     /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d10_wdl.txt,

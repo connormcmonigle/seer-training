@@ -1,7 +1,6 @@
 import os
 import torch
 import torch.optim as optim
-import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 import argparse
 
@@ -12,65 +11,82 @@ import model
 
 
 def train_step(nnue, sample, opt, queue, max_queue_size, report=False):
-  pov, white, black, score, result = sample
-  pred = nnue(pov, white, black)
-  loss = model.loss_fn(score, result, pred)
-  if report:
-    print(loss.item())
-  loss.backward()
-  if(len(queue) >= max_queue_size):
-    queue.pop(0)
-  queue.append(loss.item())
-  opt.step()
-  nnue.zero_grad()
+    pov, white, black, score, result = sample
+    pred = nnue(pov, white, black)
+    loss = model.loss_fn(score, result, pred)
+    loss.backward()
+    opt.step()
+    nnue.zero_grad()
+
+    if report:
+        print(loss.item())
+
+    if(len(queue) >= max_queue_size):
+        queue.pop(0)
+
+    queue.append(loss.item())
 
 
 def main():
-  cfg = config.Config('config.yaml')
-  sample_to_device = lambda x: tuple(map(lambda t: t.to(cfg.device, non_blocking=True), dataset.post_process(x)))
-  print(f"fine_tune: {cfg.fine_tune}")
-  nnue = model.NNUE(fine_tune=cfg.fine_tune).to(cfg.device)
+    parser = argparse.ArgumentParser(description="Seer Training")
+    parser.add_argument(
+        "--config",
+        type=str,
+        default="config.yaml",
+        help="Specifies where to look for the configuration file. Default 'config.yaml'",
+    )
 
-  if (os.path.exists(cfg.model_save_path)):
-    print('Loading model ... ')
-    nnue.load_state_dict(torch.load(cfg.model_save_path))
+    args = parser.parse_args()
+    cfg = config.Config(args.config)
 
-  writer = SummaryWriter(cfg.visual_directory)
-  opt = optim.Adadelta(nnue.parameters(), lr=cfg.learning_rate)
-  scheduler = optim.lr_scheduler.StepLR(opt, cfg.step_size, gamma=cfg.gamma)
+    def sample_to_device(x): return tuple(
+        map(lambda t: t.to(cfg.device, non_blocking=True), dataset.post_process(x)))
 
-  queue = []
-  total_steps = 0
-  
-  reader = dataset.StochasticMultiplexReader(list(map(lambda path: dataset.DataReader(path), cfg.data_read_paths)))
-  for epoch in range(cfg.epochs):
-    print(f'training on: {reader.name()}')
-    train_data = dataset.SeerData(reader, cfg)
-    
-    train_data_loader = torch.utils.data.DataLoader(train_data,
-      batch_size=cfg.batch_size, 
-      num_workers=cfg.concurrency,
-      pin_memory=True,
-      worker_init_fn=dataset.worker_init_fn)
+    print(f"fine_tune: {cfg.fine_tune}")
+    nnue = model.NNUE(fine_tune=cfg.fine_tune).to(cfg.device)
 
-    for i, sample in enumerate(train_data_loader):
-      # update visual data
-      if (i % cfg.test_rate) == 0 and i != 0:
-        step = total_steps * cfg.batch_size
-        train_loss = sum(queue) / len(queue)        
-        writer.add_scalar('train_loss', train_loss, step)
-      
-      if (i % cfg.save_rate) == 0 and i != 0:
-        print('Saving model ...')
-        nnue.flattened_parameters().tofile(cfg.bin_model_save_path)
-        torch.save(nnue.state_dict(), cfg.model_save_path)
+    if (os.path.exists(cfg.model_save_path)):
+        print(f"Loading model from {cfg.model_save_path} ... ")
+        nnue.load_state_dict(torch.load(cfg.model_save_path))
 
-      train_step(nnue, sample_to_device(sample), opt, queue, max_queue_size=cfg.max_queue_size, report=(0 == i % cfg.report_rate))
-      total_steps += 1
+    writer = SummaryWriter(cfg.visual_directory)
+    opt = optim.Adadelta(nnue.parameters(), lr=cfg.learning_rate)
+    scheduler = optim.lr_scheduler.StepLR(opt, cfg.step_size, gamma=cfg.gamma)
 
-    scheduler.step()
+    queue = []
+    total_steps = 0
 
+    reader = dataset.StochasticMultiplexReader(
+        [dataset.DataReader(path) for path in cfg.data_read_paths])
+    for epoch in range(cfg.epochs):
+        print(f'training on: {reader.name()}')
+        train_data = dataset.SeerData(reader, cfg)
+
+        train_data_loader = torch.utils.data.DataLoader(train_data,
+                                                        batch_size=cfg.batch_size,
+                                                        num_workers=cfg.concurrency,
+                                                        pin_memory=True,
+                                                        worker_init_fn=dataset.worker_init_fn)
+
+        for i, sample in enumerate(train_data_loader):
+            # update visual data
+            if (i % cfg.test_rate) == 0 and i != 0:
+                step = total_steps * cfg.batch_size
+                train_loss = sum(queue) / len(queue)
+                writer.add_scalar('train_loss', train_loss, step)
+
+            if (i % cfg.save_rate) == 0 and i != 0:
+                print(
+                    f'Saving model to {cfg.model_save_path}, {cfg.bin_model_save_path}')
+                nnue.flattened_parameters().tofile(cfg.bin_model_save_path)
+                torch.save(nnue.state_dict(), cfg.model_save_path)
+
+            train_step(nnue, sample_to_device(sample), opt, queue,
+                       max_queue_size=cfg.max_queue_size, report=(0 == i % cfg.report_rate))
+            total_steps += 1
+
+        scheduler.step()
 
 
 if __name__ == '__main__':
-  main()
+    main()

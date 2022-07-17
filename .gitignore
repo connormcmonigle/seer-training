@@ -1,8 +1,10 @@
 build/*
 !build/.gitkeep
-*.pyc
 scripts/__pycache__/
 scripts/visual/*
 !scripts/visual/.gitkeep
 scripts/model/*
 !scripts/model/.gitkeep
+
+*.pyc
+*.so

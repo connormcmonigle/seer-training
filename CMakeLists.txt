@@ -16,10 +16,7 @@ endif()
 
 add_compile_definitions(EVALFILE="eval.bin")
 
-include_directories (include ../seer-nnue/include/)
-include_directories (include ../seer-nnue/incbin/)
-include_directories (include ../seer-nnue/syzygy/)
-
+include_directories (include ../seer-nnue/include/ ../seer-nnue/incbin/ ../seer-nnue/syzygy/)
 
 add_executable(test_sample_reader test/test_sample_reader.cc ../seer-nnue/syzygy/tbchess.c ../seer-nnue/syzygy/tbprobe.c)
 target_link_libraries (test_sample_reader Threads::Threads)
