@@ -6,6 +6,7 @@ import config
 import seer_train
 import dataset
 
+
 def main():
 
     cfg = config.Config('config.yaml')
@@ -14,7 +15,8 @@ def main():
 
     if os.path.exists(cfg.model_save_path):
         print('Loading model ... ')
-        nnue.load_state_dict(torch.load(cfg.model_save_path, map_location='cpu'))
+        nnue.load_state_dict(torch.load(
+            cfg.model_save_path, map_location='cpu'))
 
     nnue.flattened_parameters().tofile(cfg.bin_model_save_path)
     torch.save(nnue.state_dict(), cfg.model_save_path)
@@ -22,11 +24,10 @@ def main():
     num_total_parameters = sum(torch.numel(x) for x in nnue.parameters())
     num_effective_parameters = len(nnue.flattened_parameters(log=False))
 
-
-    print(f'total: {num_total_parameters}, effective: {num_effective_parameters}')
+    print(
+        f'total: {num_total_parameters}, effective: {num_effective_parameters}')
     nnue.cpu()
     nnue.eval()
-
 
     while True:
         state = seer_train.StateType.parse_fen(input('fen: '))
@@ -35,6 +36,7 @@ def main():
         pov, w, b, _, _ = dataset.post_process(tensors)
         prediction = nnue(pov, w, b)
         print(prediction)
+
 
 if __name__ == "__main__":
     main()

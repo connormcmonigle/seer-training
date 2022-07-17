@@ -48,8 +48,4 @@ PYBIND11_MODULE(seer_train, m){
     .def("set_random_ply", &train::data_generator::set_random_ply)
     .def("set_eval_limit", &train::data_generator::set_eval_limit)
     .def("generate_data", &train::data_generator::generate_data);
-
-    
-
-
 }
