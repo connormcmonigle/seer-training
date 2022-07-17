@@ -42,7 +42,7 @@ def main():
     def sample_to_device(x): return tuple(
         map(lambda t: t.to(cfg.device, non_blocking=True), dataset.post_process(x)))
 
-    print(f"fine_tune: {cfg.fine_tune}")
+    print(f"Fine Tuning: {cfg.fine_tune}")
     nnue = model.NNUE(fine_tune=cfg.fine_tune).to(cfg.device)
 
     if (os.path.exists(cfg.model_save_path)):

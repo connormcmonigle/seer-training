@@ -1,8 +1,8 @@
 import torch
 
 import config
-import seer_train
 import dataset
+import seer_train
 
 cfg = config.Config('config.yaml')
 
