@@ -1,25 +1,34 @@
-device: 'cuda'
-model_save_path: 'model/save.pt'
-bin_model_save_path: 'model/save.bin'
+device: "cuda"
+fine_tune: False
+model_save_path: "model/save.pt"
+bin_model_save_path: "model/save.bin"
 
-base_position_count_target: 700_000_000
-min_ply: 6
-pgn_src: '/media/connor/7F35A067038168A9/seer_train/src.pgn'
+concurrency: 8
+fixed_depth: 128
+fixed_nodes: 5120
+data_write_path: "/media/connor/7F35A067038168A9/seer_train3/data.txt"
+tt_mb_size: 2048
+target_sample_count: 600000000
 
-
-tb_cardinality: 6
-tb_path: /media/connor/7F35A067038168A9/6_man_tb/wdl/
-
-concurrency: 12
-root_path: '/media/connor/7F35A067038168A9/seer_train/data_root'
+data_read_paths:
+  [
+    /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_n5120_wdl.txt,
+    /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d6_wdl2.txt,
+    /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d6_wdl3.txt,
+    /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d10_wdl.txt,
+    /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d10_wdl2.txt,
+    /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d10_wdl3.txt,
+    /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d8_wdl.txt,
+    /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d8_wdl2.txt,
+  ]
 
 epochs: 100000
-shuffle_buffer_size: 200_000
+shuffle_buffer_size: 200000
 
-mirror_probability: 0.45
+mirror_probability: 0.5
 batch_size: 1024
 
-visual_directory: 'visual'
+visual_directory: "visual"
 
 save_rate: 1024
 report_rate: 50
@@ -29,4 +38,4 @@ max_queue_size: 128
 gamma: 0.05
 step_size: 100
 
-learning_rate: 0.05
+learning_rate: 1.0

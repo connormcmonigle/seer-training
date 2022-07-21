@@ -3,21 +3,14 @@
 #include <pybind11/functional.h>
 
 #include <sample.h>
-#include <session.h>
+#include <data_generator.h>
 
 namespace py = pybind11;
 
 PYBIND11_MODULE(seer_train, m){
   m.def("half_feature_numel", train::half_feature_numel);
   m.def("max_active_half_features", train::max_active_half_features);
-
-
-  m.def("known_win_value", train::known_win_value);
-  m.def("known_draw_value", train::known_draw_value);
-  m.def("known_loss_value", train::known_loss_value);
-
-  m.def("raw_n_man_path", train::raw_n_man_path);
-  m.def("train_n_man_path", train::train_n_man_path);
+  m.def("feature_transformer_parameters", train::feature_transformer_parameters);
 
   py::class_<train::feature_set>(m, "FeatureSet")
     .def_readonly("white", &train::feature_set::white)
@@ -29,40 +22,30 @@ PYBIND11_MODULE(seer_train, m){
     .def("fen", &train::state_type::fen);
 
   py::class_<train::sample>(m, "Sample")
-    .def(py::init<const train::state_type&, const train::wdl_type&>())
+    .def(py::init<const train::state_type&, const train::score_type&>())
     .def("features", &train::sample::features)
     .def("mirrored", &train::sample::mirrored)
     .def("pov", &train::sample::pov)
-    .def("win", &train::sample::win)
-    .def("draw", &train::sample::draw)
-    .def("loss", &train::sample::loss)
+    .def("score", &train::sample::score)
+    .def("result", &train::sample::result)
     .def("to_string", &train::sample::to_string);
 
   py::class_<train::sample_writer>(m, "SampleWriter")
     .def(py::init<const std::string&>())
     .def("append_sample", &train::sample_writer::append_sample);
 
-  py::class_<train::raw_fen_reader>(m, "RawFenReader")
-    .def(py::init<const std::string&>())
-    .def("size", py::overload_cast<>(&train::raw_fen_reader::size))
-    .def("__iter__", [](const train::raw_fen_reader& r) { return py::make_iterator(r.begin(), r.end()); }, py::keep_alive<0, 1>());
-
-
   py::class_<train::sample_reader>(m, "SampleReader")
     .def(py::init<const std::string&>())
     .def("size", py::overload_cast<>(&train::sample_reader::size))
     .def("__iter__", [](const train::sample_reader& r) { return py::make_iterator(r.begin(), r.end()); }, py::keep_alive<0, 1>());
 
-  py::class_<train::session>(m, "Session")
-    .def(py::init<const std::string&>())
-    .def("load_weights", &train::session::load_weights)
-    .def("concurrency", &train::session::concurrency)
-    .def("set_concurrency", &train::session::set_concurrency)
-    .def("get_train_path", &train::session::get_train_path)
-    .def("get_raw_path", &train::session::get_raw_path)
-    .def("get_n_man_train_path", &train::session::get_n_man_train_path)
-    .def("get_n_man_raw_path", &train::session::get_n_man_raw_path)
-    .def("maybe_generate_links_for", &train::session::maybe_generate_links_for, py::call_guard<py::gil_scoped_release>());
-
-
+  py::class_<train::data_generator>(m, "DataGenerator")
+    .def(py::init<const std::string&, const size_t&, const size_t&>())
+    .def("set_concurrency", &train::data_generator::set_concurrency)
+    .def("set_fixed_depth", &train::data_generator::set_fixed_depth)
+    .def("set_fixed_nodes", &train::data_generator::set_fixed_nodes)
+    .def("set_ply_limit", &train::data_generator::set_ply_limit)
+    .def("set_random_ply", &train::data_generator::set_random_ply)
+    .def("set_eval_limit", &train::data_generator::set_eval_limit)
+    .def("generate_data", &train::data_generator::generate_data);
 }
