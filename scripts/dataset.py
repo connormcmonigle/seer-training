@@ -44,10 +44,10 @@ def post_process(x):
 
 
 class DataReader:
-    def __init__(self, path):
+    def __init__(self, path, size=None):
         assert os.path.exists(path)
         self.path = path
-        self.size_ = seer_train.SampleReader(self.path).size()
+        self.size_ = size if size else seer_train.SampleReader(self.path).size()
         self.process_id = 0
         self.num_processes = 1
 
