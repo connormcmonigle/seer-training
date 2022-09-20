@@ -11,7 +11,7 @@ def main():
 
     cfg = config.Config('config.yaml')
 
-    nnue = model.NNUE(fine_tune=False).to('cpu')
+    nnue = model.NNUE(fine_tune=cfg.fine_tune).to('cpu')
 
     if os.path.exists(cfg.model_save_path):
         print('Loading model ... ')

@@ -56,8 +56,10 @@ def main():
     queue = []
     total_steps = 0
 
+    assert len(cfg.data_read_paths) == len(cfg.data_read_lengths)
+
     reader = dataset.StochasticMultiplexReader(
-        [dataset.DataReader(path) for path in cfg.data_read_paths])
+        [dataset.DataReader(path, size) for path, size in zip(cfg.data_read_paths, cfg.data_read_lengths)])
     for _ in range(cfg.epochs):
         print(f'training on: {reader.name()}')
         train_data = dataset.SeerData(reader, cfg)
