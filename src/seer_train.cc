@@ -3,7 +3,10 @@
 #include <pybind11/functional.h>
 
 #include <sample.h>
+#include <stochastic_multiplex_sample_reader.h>
 #include <data_generator.h>
+
+#include <vector>
 
 namespace py = pybind11;
 
@@ -38,6 +41,10 @@ PYBIND11_MODULE(seer_train, m){
     .def(py::init<const std::string&>())
     .def("size", py::overload_cast<>(&train::sample_reader::size))
     .def("__iter__", [](const train::sample_reader& r) { return py::make_iterator(r.begin(), r.end()); }, py::keep_alive<0, 1>());
+
+  py::class_<train::stochastic_multiplex_sample_reader>(m, "StochasticMultiplexSampleReader")
+    .def(py::init<const std::vector<size_t>&, const std::vector<train::sample_reader>&>())
+    .def("__iter__", [](const train::stochastic_multiplex_sample_reader& r) { return py::make_iterator(r.begin(), r.end()); }, py::keep_alive<0, 1>());
 
   py::class_<train::data_generator>(m, "DataGenerator")
     .def(py::init<const std::string&, const size_t&, const size_t&>())

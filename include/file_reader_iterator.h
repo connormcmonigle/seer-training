@@ -14,7 +14,7 @@ struct file_reader_iterator{
   using value_type = T;
   using pointer = const T*;
   using reference = const T&;
-  using iterator_category = std::output_iterator_tag;
+  using iterator_category = std::input_iterator_tag;
 
   std::optional<T> current_{std::nullopt};
   std::function<std::optional<T>(std::ifstream&)> read_element_;
