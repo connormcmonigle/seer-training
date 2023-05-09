@@ -18,13 +18,13 @@ data_read_paths:
     /home/connor/steam_games/seer_train_attu/terashuf/data_shuf_n5120_wdl3.txt,
     /home/connor/steam_games/seer_train_attu/terashuf/data_shuf_n5120_wdl4.txt,
     /home/connor/steam_games/seer_train_attu/terashuf/data_shuf_n5120_wdl5.txt,
-#    /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d6_wdl2.txt,
-#    /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d6_wdl3.txt,
+    /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d6_wdl2.txt,
+    /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d6_wdl3.txt,
     /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d10_wdl.txt,
     /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d10_wdl2.txt,
     /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d10_wdl3.txt,
-#    /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d8_wdl.txt,
-#    /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d8_wdl2.txt,
+    /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d8_wdl.txt,
+    /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d8_wdl2.txt,
   ]
 
 data_read_lengths:
@@ -35,20 +35,20 @@ data_read_lengths:
     1031105959,
     1063645499,
     1222722477,
-#    494177165,
-#    552429132,
+    494177165,
+    552429132,
     150000000,
     64457485,
     102174052,
-#    300000000,
-#    300000000,
+    300000000,
+    300000000,
   ]
 
 epochs: 100000
 shuffle_buffer_size: 500_000
 
 mirror_probability: 0.5
-batch_size: 8192
+batch_size: 1024
 
 visual_directory: "visual"
 
@@ -57,7 +57,7 @@ report_rate: 50
 test_rate: 50
 max_queue_size: 128
 
-gamma: 0.05
+gamma: 1.0
 step_size: 100
 
 learning_rate: 1.0

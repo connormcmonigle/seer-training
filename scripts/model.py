@@ -94,7 +94,7 @@ class FrozenFeatureTransformer(nn.Module):
 class NNUE(nn.Module):
     def __init__(self, fine_tune=False):
         super(NNUE, self).__init__()
-        BASE = 512
+        BASE = 768
         funcs = [factorizers.piece_position, ]
 
         self.shared_affine = FrozenFeatureTransformer(
