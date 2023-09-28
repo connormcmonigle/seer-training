@@ -2,15 +2,15 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.autograd as autograd
 
 import factorizers
 import seer_train
-
+import lasso
 
 def loss_fn(score, result, pred):
     lambda_ = 0.6
-    loss = lambda_ * (score.sigmoid() - pred.sigmoid()) ** 2 + \
-        (1.0 - lambda_) * (result - pred.sigmoid()) ** 2
+    loss = lambda_ * (score.sigmoid() - pred.sigmoid()) ** 2 + (1.0 - lambda_) * (result - pred.sigmoid()) ** 2
     return loss.mean()
 
 
@@ -94,7 +94,7 @@ class FrozenFeatureTransformer(nn.Module):
 class NNUE(nn.Module):
     def __init__(self, fine_tune=False):
         super(NNUE, self).__init__()
-        BASE = 512
+        BASE = 768
         funcs = [factorizers.piece_position, ]
 
         self.shared_affine = FrozenFeatureTransformer(
@@ -107,8 +107,10 @@ class NNUE(nn.Module):
     def forward(self, pov, white, black):
         w_ = self.shared_affine(white)
         b_ = self.shared_affine(black)
-        base = F.relu(
-            pov * torch.cat([w_, b_], dim=1) + (1.0 - pov) * torch.cat([b_, w_], dim=1))
+        
+        base = F.relu(pov * torch.cat([w_, b_], dim=1) + (1.0 - pov) * torch.cat([b_, w_], dim=1))
+        base = lasso.inject_lasso_loss(base)
+        
         x = F.relu(self.fc0(base))
         x = torch.cat([x, F.relu(self.fc1(x))], dim=1)
         x = torch.cat([x, F.relu(self.fc2(x))], dim=1)

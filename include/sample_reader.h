@@ -10,6 +10,7 @@
 namespace train{
 
 struct sample_reader : line_count_size<sample_reader> {
+  using iterator = file_reader_iterator<sample>;
   std::string path_;
 
   file_reader_iterator<sample> begin() const { return file_reader_iterator<sample>(to_line_reader<sample>(sample::from_string), path_); }

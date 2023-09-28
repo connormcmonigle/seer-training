@@ -58,10 +58,14 @@ def main():
 
     assert len(cfg.data_read_paths) == len(cfg.data_read_lengths)
 
-    reader = dataset.StochasticMultiplexReader(
-        [dataset.DataReader(path, size) for path, size in zip(cfg.data_read_paths, cfg.data_read_lengths)])
+    reader = seer_train.StochasticMultiplexSampleReader(
+        cfg.data_read_lengths,
+        [seer_train.SampleReader(path) for path in cfg.data_read_paths],
+    )
+
+    reader = dataset.SubsetConfigurable(sum(cfg.data_read_lengths), reader)
+
     for _ in range(cfg.epochs):
-        print(f'training on: {reader.name()}')
         train_data = dataset.SeerData(reader, cfg)
 
         train_data_loader = torch.utils.data.DataLoader(train_data,

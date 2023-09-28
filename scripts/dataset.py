@@ -1,7 +1,6 @@
 import os
 import random
 import torch
-import torch.nn.functional as F
 import numpy as np
 import seer_train
 
@@ -43,11 +42,10 @@ def post_process(x):
     return pov, w, b, p, z
 
 
-class DataReader:
-    def __init__(self, path, size=None):
-        assert os.path.exists(path)
-        self.path = path
-        self.size_ = size if size else seer_train.SampleReader(self.path).size()
+class SubsetConfigurable:
+    def __init__(self, size, sample_reader):
+        self.size_ = size
+        self.reader_ = sample_reader
         self.process_id = 0
         self.num_processes = 1
 
@@ -59,46 +57,10 @@ class DataReader:
     def size(self):
         return (self.size_ // self.num_processes) + (self.process_id < (self.size_ % self.num_processes))
 
-    def name(self):
-        return f'DataReader({self.path})'
-
     def __iter__(self):
-        reader = seer_train.SampleReader(self.path)
-        for i, sample in enumerate(reader):
-            if self.process_id == i % self.num_processes:
+        for idx, sample in enumerate(self.reader_):
+            if self.process_id == idx % self.num_processes:
                 yield sample
-
-
-class StochasticMultiplexReader:
-    def __init__(self, readers):
-        self.readers = readers
-        reader_names = ', \n  '.join([f'{r.name()} : {p}' for r, p in zip(
-            readers, [reader.size() for reader in self.readers])])
-        self.name_ = f'StochasticMultiplexReader(cardinality={self.size()},\n  [{reader_names}])'
-
-    def configure_subset(self, process_id, num_processes):
-        assert process_id < num_processes
-        for reader in self.readers:
-            reader.configure_subset(process_id, num_processes)
-
-    def name(self):
-        return self.name_
-
-    def size(self):
-        return sum(reader.size() for reader in self.readers)
-
-    def __iter__(self):
-        remaining = np.array([reader.size() for reader in self.readers])
-        iters = [iter(reader) for reader in self.readers]
-        items = [next(it, None) for it in iters]
-
-        while (remaining > 0).any():
-            probabilities = remaining / remaining.sum()
-            idx = np.random.choice(len(items), p=probabilities)
-            if items[idx] is not None:
-                yield items[idx]
-                items[idx] = next(iters[idx], None)
-                remaining[idx] -= 1
 
 
 class SeerData(torch.utils.data.IterableDataset):
@@ -128,6 +90,6 @@ class SeerData(torch.utils.data.IterableDataset):
                 yield val
 
     def __iter__(self):
-        for sample in self.sample_iter():
+        for sample in self.reader:
             mirror = np.random.rand() <= self.config.mirror_probability
             yield sample_to_tensor(sample.mirrored() if mirror else sample)
