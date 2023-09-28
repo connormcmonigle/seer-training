@@ -6,8 +6,12 @@
 #include <memory>
 #include <random>
 
-#include <embedded_weights.h>
-#include <nnue_util.h>
+#include <chess/board_history.h>
+#include <nnue/eval.h>
+#include <search/search_constants.h>
+#include <search/search_worker.h>
+#include <nnue/embedded_weights.h>
+#include <nnue/weights_streamer.h>
 
 #include <sample.h>
 #include <sample_reader.h>
@@ -66,13 +70,13 @@ struct data_generator{
   data_generator& generate_data() {
     const nnue::weights weights = [&, this]{
       nnue::weights result{};
-      nnue::embedded_weight_streamer embedded(embed::weights_file_data);
+      nnue::embedded_weight_streamer embedded(nnue::embed::weights_file_data);
       result.load(embedded);
       return result;
     }();
     
     auto generate = [&, this]{
-      using worker_type = search::search_worker<false>;
+      using worker_type = search::search_worker;
       auto gen = std::mt19937(std::random_device()());
 
 
@@ -87,7 +91,7 @@ struct data_generator{
         
         std::vector<sample> block{};
 
-        chess::position_history hist{};
+        chess::board_history hist{};
         state_type state = state_type::start_pos();
 
         const result_type game_result = [&]{ 
@@ -96,11 +100,11 @@ struct data_generator{
               const auto mv_list = state.generate_moves();
               const size_t idx = std::uniform_int_distribution<size_t>(0, mv_list.size()-1)(gen);
 
-              hist.push_(state.hash());
+              hist.push(state.hash());
               state = state.forward(mv_list[idx]);
             } else {
               worker->go(hist, state, 1);
-              worker->iterative_deepening_loop_();
+              worker->iterative_deepening_loop();
               worker->stop();
 
               const auto best_move = worker->best_move();
@@ -111,8 +115,8 @@ struct data_generator{
 
               const auto view = search::stack_view::root((worker->internal).stack);
               const auto evaluator = [&] {
-                nnue::eval result(&weights);
-                state.feature_full_refresh(result);
+                nnue::eval result(&weights, &worker->internal.scratchpad, 0, 0);
+                state.feature_full_reset(result);
                 return result;
               }();
             
@@ -125,7 +129,7 @@ struct data_generator{
 
               if (!state.is_check() && static_eval == q_eval) { block.emplace_back(state, best_score); }
 
-              hist.push_(state.hash());
+              hist.push(state.hash());
               state = state.forward(best_move);
             }
           }

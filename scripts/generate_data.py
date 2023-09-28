@@ -15,8 +15,11 @@ def main():
     args = parser.parse_args()
     cfg = config.Config(args.config)
 
-    gen = seer_train.DataGenerator(cfg.data_write_path, cfg.target_sample_count, cfg.tt_mb_size).set_fixed_depth(
-        cfg.fixed_depth).set_fixed_nodes(cfg.fixed_nodes).set_concurrency(cfg.concurrency)
+    gen = seer_train.DataGenerator(cfg.data_write_path, cfg.target_sample_count, cfg.tt_mb_size)\
+        .set_fixed_depth(cfg.fixed_depth)\
+        .set_fixed_nodes(cfg.fixed_nodes)\
+        .set_eval_limit(cfg.eval_limit)\
+        .set_concurrency(cfg.concurrency)
     gen.generate_data()
 
 
