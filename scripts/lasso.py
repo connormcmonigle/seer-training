@@ -11,7 +11,7 @@ class InjectLassoLoss(autograd.Function):
 
     @staticmethod
     def forward(input):
-        return input
+        return input.clone()
 
     @staticmethod
     def backward(ctx, grad_output):

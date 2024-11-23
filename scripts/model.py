@@ -9,7 +9,7 @@ import seer_train
 import lasso
 
 def loss_fn(score, result, pred):
-    lambda_ = 0.6
+    lambda_ = 0.1
     loss = lambda_ * (score.sigmoid() - pred.sigmoid()) ** 2 + (1.0 - lambda_) * (result - pred.sigmoid()) ** 2
     return loss.mean()
 
@@ -94,7 +94,7 @@ class FrozenFeatureTransformer(nn.Module):
 class NNUE(nn.Module):
     def __init__(self, fine_tune=False):
         super(NNUE, self).__init__()
-        BASE = 768
+        BASE = 1024
         funcs = [factorizers.piece_position, ]
 
         self.shared_affine = FrozenFeatureTransformer(
@@ -104,13 +104,21 @@ class NNUE(nn.Module):
         self.fc2 = nn.Linear(16, 8)
         self.fc3 = nn.Linear(24, 1)
 
+    @torch.no_grad()
+    def _clip_fc0(self):
+        self.fc0.weight.clamp_(min=(-128 / 1024), max=(127 / 1024))
+
     def forward(self, pov, white, black):
+        self._clip_fc0()
+
         w_ = self.shared_affine(white)
         b_ = self.shared_affine(black)
         
         base = F.relu(pov * torch.cat([w_, b_], dim=1) + (1.0 - pov) * torch.cat([b_, w_], dim=1))
         base = lasso.inject_lasso_loss(base)
-        
+
+        base = base.clamp(min=0.0, max=(255 / 512))
+
         x = F.relu(self.fc0(base))
         x = torch.cat([x, F.relu(self.fc1(x))], dim=1)
         x = torch.cat([x, F.relu(self.fc2(x))], dim=1)
@@ -118,6 +126,8 @@ class NNUE(nn.Module):
         return x
 
     def flattened_parameters(self, log=True):
+        self._clip_fc0()
+
         def join_param(joined, param):
             if log:
                 print(param.size())

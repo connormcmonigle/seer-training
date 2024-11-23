@@ -3,34 +3,37 @@ fine_tune: False
 model_save_path: "model/save.pt"
 bin_model_save_path: "model/save.bin"
 
-concurrency: 16
+concurrency: 32
 fixed_depth: 128
 fixed_nodes: 10240
 eval_limit: 1792
-data_write_path: "/home/connor/steam_games/seer_train/data.txt"
+data_write_path: "/media/connor/8a139777-a6de-4f5f-b5b5-b006779e032d/seer_train/data.txt"
 tt_mb_size: 2048
 target_sample_count: 600000000
 
 data_read_paths:
   [
-    /home/connor/steam_games/seer_train_attu/terashuf/data_shuf_n10240_wdl_latest.txt,
-    /home/connor/steam_games/seer_train_attu/terashuf/data_shuf_n20480_wdl.txt,
-    /media/connor/7F35A067038168A91/seer_train3/terashuf/data_shuf_n5120_wdl.txt,
-    /home/connor/steam_games/seer_train_attu/terashuf/data_shuf_n5120_wdl2.txt,
-    /home/connor/steam_games/seer_train_attu/terashuf/data_shuf_n5120_wdl3.txt,
-    /home/connor/steam_games/seer_train_attu/terashuf/data_shuf_n5120_wdl4.txt,
-    /home/connor/steam_games/seer_train_attu/terashuf/data_shuf_n5120_wdl5.txt,
-    /media/connor/7F35A067038168A91/seer_train3/terashuf/data_shuf_old_d6_wdl2.txt,
-    /media/connor/7F35A067038168A91/seer_train3/terashuf/data_shuf_old_d6_wdl3.txt,
-    /media/connor/7F35A067038168A91/seer_train3/terashuf/data_shuf_old_d10_wdl.txt,
-    /media/connor/7F35A067038168A91/seer_train3/terashuf/data_shuf_old_d10_wdl2.txt,
-    /media/connor/7F35A067038168A91/seer_train3/terashuf/data_shuf_old_d10_wdl3.txt,
-    /media/connor/7F35A067038168A91/seer_train3/terashuf/data_shuf_old_d8_wdl.txt,
-    /media/connor/7F35A067038168A91/seer_train3/terashuf/data_shuf_old_d8_wdl2.txt,
+    /media/connor/8a139777-a6de-4f5f-b5b5-b006779e032d/seer_train_ec2/data_shuf_n40960_wdl.txt,
+    /media/connor/8a139777-a6de-4f5f-b5b5-b006779e032d/seer_train_attu/terashuf/data_shuf_n10240_wdl_latest.txt,
+    /media/connor/8a139777-a6de-4f5f-b5b5-b006779e032d/seer_train_attu/terashuf/data_shuf_n20480_wdl.txt,
+    /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_n5120_wdl.txt,
+    /media/connor/8a139777-a6de-4f5f-b5b5-b006779e032d/seer_train_attu/terashuf/data_shuf_n5120_wdl2.txt,
+    /media/connor/8a139777-a6de-4f5f-b5b5-b006779e032d/seer_train_attu/terashuf/data_shuf_n5120_wdl3.txt,
+    /media/connor/8a139777-a6de-4f5f-b5b5-b006779e032d/seer_train_attu/terashuf/data_shuf_n5120_wdl4.txt,
+    /media/connor/8a139777-a6de-4f5f-b5b5-b006779e032d/seer_train_attu/terashuf/data_shuf_n5120_wdl5.txt,
+
+    # /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d6_wdl2.txt,
+    # /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d6_wdl3.txt,
+    # /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d10_wdl.txt,
+    # /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d10_wdl2.txt,
+    # /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d10_wdl3.txt,
+    # /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d8_wdl.txt,
+    # /media/connor/7F35A067038168A9/seer_train3/terashuf/data_shuf_old_d8_wdl2.txt,
   ]
 
 data_read_lengths:
   [
+    661637621,
     600000000,
     1078540650,
     1139897403,
@@ -38,13 +41,14 @@ data_read_lengths:
     1031105959,
     1063645499,
     1222722477,
-    494177165,
-    552429132,
-    150000000,
-    64457485,
-    102174052,
-    300000000,
-    300000000,
+  
+    # 494177165,
+    # 552429132,
+    # 150000000,
+    # 64457485,
+    # 102174052,
+    # 300000000,
+    # 300000000,
   ]
 
 epochs: 100000
